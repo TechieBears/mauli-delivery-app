@@ -15,13 +15,22 @@ const api = axios.create({
   },
 });
 
-// DEBUG: serialize a request body for logging. FormData (file uploads) can't be
-// JSON-stringified, so list its field names instead.
+// DEBUG: serialize a request body for logging. FormData can't be
+// JSON-stringified, so unpack it into a plain object of field → value. File
+// parts are summarised (name/type/uri) rather than dumped whole.
 const describeBody = data => {
   if (data == null) return undefined;
   if (typeof FormData !== 'undefined' && data instanceof FormData) {
     const parts = data.getParts?.() ?? [];
-    return { _formData: parts.map(p => p.fieldName ?? p.name ?? 'field') };
+    const fields = {};
+    parts.forEach(p => {
+      const key = p.fieldName ?? p.name ?? 'field';
+      // A file part carries `uri`; a plain text field carries `string`.
+      fields[key] = p.uri
+        ? { _file: p.name ?? '(unnamed)', type: p.type, uri: p.uri }
+        : p.string;
+    });
+    return { _formData: fields };
   }
   return data;
 };

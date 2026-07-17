@@ -15,6 +15,7 @@ import useAppStore from '../store/useAppStore';
 import { useSendOtp, useVerifyOtp } from '../hooks/useAuthQueries';
 import { fetchVendorProfile } from '../services/vendorService';
 import { fetchCustomerProfile } from '../services/customerService';
+import { fetchTransporterProfile } from '../services/transporterService';
 import { getResumeStep, isOnboardingIncomplete } from '../utils/onboardingProgress';
 
 const OTP_LENGTH = 6;
@@ -99,6 +100,7 @@ const OtpScreen = ({ navigation, route }) => {
         refreshToken,
         user,
         vendorId: profile?.vendorId ?? null,
+        transporterId: profile?.transporterId ?? null,
         kycStatus: profile?.kycStatus ?? null,
         isPricingComplete: profile?.isPricingComplete ?? false,
       });
@@ -106,7 +108,47 @@ const OtpScreen = ({ navigation, route }) => {
       const userRole = user?.role ?? role;
       const kycStatus = profile?.kycStatus;
 
-      if (userRole === 'vendor') {
+      if (userRole === 'transporter') {
+        // GET /transporter/profile — the transporter's own endpoint (never the
+        // customer one). Returns the Transporter doc with `userId` populated.
+        let transporterProfile = null;
+        try {
+          const profileRes = await fetchTransporterProfile();
+          transporterProfile = profileRes?.data;
+        } catch (_) { /* logged in api.js */ }
+
+        console.log('[Otp] transporter profile:', JSON.stringify(transporterProfile, null, 2));
+
+        // verify-otp returns kycStatus but not email, so the KYC form is gated
+        // on status, not on a missing email:
+        //   drafted / pending → registration form (name/email/licence/vehicle)
+        //   onReview          → under review
+        //   rejected          → rejected message
+        //   approved          → home
+        // Submitting the form leaves kycStatus at 'pending' — only an admin
+        // moves it to 'approved', which is what actually opens the app.
+        // Prefer the profile's status: it's read fresh, so an approval granted
+        // since the token was issued is picked up here.
+        const transporterKyc = transporterProfile?.kycStatus ?? kycStatus;
+
+        console.log('[Otp] transporter routing decision', {
+          kycStatusFromOtp: kycStatus,
+          kycStatusFromProfile: transporterProfile?.kycStatus,
+          resolved: transporterKyc,
+          isActive: transporterProfile?.isActive,
+          hasLicense: !!transporterProfile?.drivingLicenseNo,
+          vehicleCount: transporterProfile?.vehicles?.length ?? 0,
+          incomplete: isOnboardingIncomplete(transporterKyc),
+        });
+
+        if (transporterKyc === 'approved') {
+          navigation.reset({ index: 0, routes: [{ name: 'TransporterApp' }] });
+        } else if (isOnboardingIncomplete(transporterKyc)) {
+          navigation.reset({ index: 0, routes: [{ name: 'TransporterKyc' }] });
+        } else {
+          navigation.reset({ index: 0, routes: [{ name: 'VerificationPending', params: { kycStatus: transporterKyc } }] });
+        }
+      } else if (userRole === 'vendor') {
         // Fetch + log the full vendor profile so we can inspect what the
         // backend returns (and why routing goes where it goes).
         let vendorProfile = null;

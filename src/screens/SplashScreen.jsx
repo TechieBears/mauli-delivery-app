@@ -22,7 +22,7 @@ import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import useAppStore from '../store/useAppStore';
 import { fetchTransporterProfile } from '../services/transporterService';
-import { getResumeStep, isOnboardingIncomplete } from '../utils/onboardingProgress';
+import { isOnboardingIncomplete } from '../utils/onboardingProgress';
 
 const BAR_WIDTH = 80;
 const BAR_FILL_WIDTH = Math.round(BAR_WIDTH / 3);
@@ -102,7 +102,6 @@ const SplashScreen = ({ navigation }) => {
   const isAuthenticated = useAppStore(state => state.isAuthenticated);
   const storedKycStatus = useAppStore(state => state.kycStatus);
   const setKycStatus = useAppStore(state => state.setKycStatus);
-  const user = useAppStore(state => state.user);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -126,16 +125,17 @@ const SplashScreen = ({ navigation }) => {
       if (kycStatus === 'approved') {
         navigation.replace('TransporterApp');
       } else if (isOnboardingIncomplete(kycStatus)) {
-        // drafted / pending → resume exactly where the transporter left off.
-        const resumeStep = getResumeStep(transporter);
-        navigation.replace('Onboarding', { phone: user?.phone ?? '', resumeStep });
+        // drafted / pending → the transporter's own KYC form. Never the shared
+        // Onboarding screen: that one defaults to the customer role and would
+        // fetch GET /customer/profile (403 for a transporter token).
+        navigation.replace('TransporterKyc');
       } else {
         // onReview → under review; rejected → rejected message.
         navigation.replace('VerificationPending', { kycStatus });
       }
     }, 2500);
     return () => clearTimeout(timer);
-  }, [navigation, isAuthenticated, storedKycStatus, setKycStatus, user]);
+  }, [navigation, isAuthenticated, storedKycStatus, setKycStatus]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

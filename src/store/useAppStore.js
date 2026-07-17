@@ -9,14 +9,21 @@ const useAppStore = create(
       accessToken: null,
       refreshToken: null,
       user: null,            // { id, name, phone, role }
-      role: null,            // 'vendor' | 'customer'
+      role: null,            // 'vendor' | 'customer' | 'transporter'
       isAuthenticated: false,
       vendorId: null,
-      kycStatus: null,       // 'pending' | 'under_review' | 'approved' | 'rejected'
+      transporterId: null,
+      kycStatus: null,       // 'drafted' | 'pending' | 'onReview' | 'approved' | 'rejected'
       isPricingComplete: false,
+      // The backend has no field for T&C acceptance yet (the Transporter model
+      // doesn't define one and PATCH /transporter/profile drops unknown keys),
+      // so acceptance is held here. Move to the server response once it lands.
+      termsAccepted: false,
       profile: {},
 
       setRole: role => set({ role }),
+
+      setTermsAccepted: accepted => set({ termsAccepted: accepted }),
 
       setProfile: data =>
         set(state => ({ profile: { ...state.profile, ...data } })),
@@ -30,7 +37,7 @@ const useAppStore = create(
       },
 
       // Called after verify-otp success
-      login: ({ accessToken, refreshToken, user, vendorId, kycStatus, isPricingComplete }) => {
+      login: ({ accessToken, refreshToken, user, vendorId, transporterId, kycStatus, isPricingComplete }) => {
         // Store tokens directly in MMKV so the axios interceptor can read them
         // synchronously (independent of Zustand persist rehydration timing).
         storage.set(STORAGE_KEYS.AUTH_TOKEN, accessToken);
@@ -42,6 +49,7 @@ const useAppStore = create(
           role: user?.role ?? null,
           isAuthenticated: true,
           vendorId: vendorId ?? null,
+          transporterId: transporterId ?? null,
           kycStatus,
           isPricingComplete,
         });
@@ -57,8 +65,10 @@ const useAppStore = create(
           role: null,
           isAuthenticated: false,
           vendorId: null,
+          transporterId: null,
           kycStatus: null,
           isPricingComplete: false,
+          termsAccepted: false,
           profile: {},
         });
       },

@@ -8,8 +8,15 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import OtpScreen from '../screens/OtpScreen';
 import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
+import TransporterKycScreen from '../screens/onboarding/TransporterKycScreen';
 import VerificationPendingScreen from '../screens/onboarding/VerificationPendingScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
+import TransporterTabNavigator from './TransporterTabNavigator';
+import {
+  TransporterProfileDetailsScreen,
+  TransporterDeliveryHistoryScreen,
+  TransporterOrderDetailScreen,
+} from '../screens/transporter';
 
 const Stack = createNativeStackNavigator();
 
@@ -53,9 +60,40 @@ const RootNavigator = () => (
         }}
       />
       <Stack.Screen
+        name="TransporterKyc"
+        component={TransporterKycScreen}
+        options={{
+          title: 'Transporter Registration',
+          headerBackTitle: '',
+          gestureEnabled: false,
+          headerBackVisible: false,
+        }}
+      />
+      <Stack.Screen
         name="VerificationPending"
         component={VerificationPendingScreen}
         options={{ title: 'Mauli Transporter', headerBackVisible: false }}
+      />
+      {/* Post-approval landing: Orders + Profile tabs. */}
+      <Stack.Screen
+        name="TransporterApp"
+        component={TransporterTabNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TransporterProfileDetails"
+        component={TransporterProfileDetailsScreen}
+        options={{ title: 'Profile Details', headerBackTitle: '' }}
+      />
+      <Stack.Screen
+        name="TransporterDeliveryHistory"
+        component={TransporterDeliveryHistoryScreen}
+        options={{ title: 'Delivery History', headerBackTitle: '' }}
+      />
+      <Stack.Screen
+        name="TransporterOrderDetail"
+        component={TransporterOrderDetailScreen}
+        options={{ title: 'Order Details', headerBackTitle: '' }}
       />
       <Stack.Screen
         name="HelpSupport"
