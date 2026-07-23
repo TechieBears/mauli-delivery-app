@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DevOtpBanner from '../components/DevOtpBanner';
 import useAppStore from '../store/useAppStore';
 import { useSendOtp, useVerifyOtp } from '../hooks/useAuthQueries';
 import { fetchVendorProfile } from '../services/vendorService';
@@ -254,9 +255,12 @@ const OtpScreen = ({ navigation, route }) => {
             <Text style={styles.phone}>{maskedPhone}</Text>
           </Text>
 
-          {devOtp ? (
-            <Text style={styles.devOtp}>DEV — OTP: {devOtp}</Text>
-          ) : null}
+          <DevOtpBanner
+            otp={devOtp}
+            length={OTP_LENGTH}
+            onFill={setOtp}
+            style={styles.devOtpSpacing}
+          />
 
           {/* OTP boxes */}
           <View style={styles.otpRow}>
@@ -413,18 +417,7 @@ const styles = StyleSheet.create({
   resendDisabled: {
     color: '#9ca3af',
   },
-  devOtp: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#d97706',
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
+  devOtpSpacing: { marginBottom: 20 },
 });
 
 export default OtpScreen;

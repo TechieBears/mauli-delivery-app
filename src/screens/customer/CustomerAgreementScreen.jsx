@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DocumentText1 } from 'iconsax-react-native';
 import AppHeader from '../../components/AppHeader';
 import DocumentViewer from '../../components/DocumentViewer';
+import DevOtpBanner from '../../components/DevOtpBanner';
 import { colors } from '../../theme/colors';
 import toast from '../../utils/toast';
 import { toHttpsUrl, isPdfUrl } from '../../utils/imageUrl';
@@ -247,9 +248,12 @@ const CustomerAgreementScreen = ({ navigation, onAccepted }) => {
               accept the agreement.
             </Text>
 
-            {devOtp ? (
-              <Text style={styles.devOtp}>DEV — OTP: {devOtp}</Text>
-            ) : null}
+            <DevOtpBanner
+              otp={devOtp}
+              length={OTP_LENGTH}
+              onFill={setOtp}
+              style={styles.devOtpSpacing}
+            />
 
             <View style={styles.otpRow}>
               {otp.map((digit, index) => (
@@ -507,18 +511,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 18,
   },
-  devOtp: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#d97706',
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
+  devOtpSpacing: { marginBottom: 16 },
   otpRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -22,6 +22,7 @@ import { resetToLogin } from '../../navigation/navigationRef';
 import toast from '../../utils/toast';
 import { FormField, HorizontalStepper } from '../../components/onboarding';
 import { VENDOR_STEPS, CUSTOMER_STEPS } from '../../constants/onboardingSteps';
+import DevOtpBanner from '../../components/DevOtpBanner';
 import { colors } from '../../theme/colors';
 import {
   VendorIdentityStep,
@@ -511,9 +512,12 @@ const OnboardingScreen = ({ navigation, route }) => {
                     Enter the OTP sent to +91 {data.phone}
                   </Text>
 
-                  {devOtp ? (
-                    <Text style={styles.devOtp}>DEV — OTP: {devOtp}</Text>
-                  ) : null}
+                  <DevOtpBanner
+                    otp={devOtp}
+                    length={OTP_LENGTH}
+                    onFill={setOtp}
+                    style={styles.devOtpSpacing}
+                  />
 
                   <View style={styles.otpRow}>
                     {otp.map((digit, i) => (
@@ -793,18 +797,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
   },
-  devOtp: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#d97706',
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
+  devOtpSpacing: { marginBottom: 16 },
   resendLink: { alignItems: 'center', marginTop: 4 },
   resendLinkText: {
     fontSize: 13,

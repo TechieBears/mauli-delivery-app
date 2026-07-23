@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { X, User, UserPlus, CheckCircle } from 'phosphor-react-native';
+import DevOtpBanner from '../../components/DevOtpBanner';
 import {
   useSendDeliveryOtp,
   useVerifyDeliveryOtp,
@@ -161,11 +162,12 @@ const OtpStep = ({ receiver, devOtp, otp, setOtp, onVerify, onResend, verifying,
         <Text style={styles.strong}>{receiver.phone}</Text>.
       </Text>
 
-      {devOtp ? (
-        <View style={styles.devBox}>
-          <Text style={styles.devText}>Dev OTP: {devOtp}</Text>
-        </View>
-      ) : null}
+      <DevOtpBanner
+        otp={devOtp}
+        length={OTP_LENGTH}
+        onFill={setOtp}
+        style={styles.devOtpSpacing}
+      />
 
       <View style={styles.otpRow}>
         {otp.map((digit, i) => (
@@ -422,14 +424,7 @@ const styles = StyleSheet.create({
   },
   warn: { fontSize: 13, color: '#a16207', lineHeight: 19, marginBottom: 8 },
 
-  devBox: {
-    backgroundColor: colors.warningBg,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 18,
-    alignItems: 'center',
-  },
-  devText: { fontSize: 13, fontWeight: '800', color: '#a16207', letterSpacing: 1 },
+  devOtpSpacing: { marginBottom: 18 },
 
   otpRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
   otpBox: {

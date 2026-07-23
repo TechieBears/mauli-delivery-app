@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { CloseCircle } from 'iconsax-react-native';
+import DevOtpBanner from '../../components/DevOtpBanner';
 import { colors } from '../../theme/colors';
 import { useUpdateVendorOrderStatus } from '../../hooks/useVendorQueries';
 import toast from '../../utils/toast';
@@ -111,7 +112,12 @@ const DeliveryOtpModal = ({ visible, orderId, driverPhone, devOtp, onClose, onVe
             OTP sent to <Text style={styles.phone}>{maskedPhone}</Text>
           </Text>
 
-          {devOtp ? <Text style={styles.devOtp}>DEV — OTP: {devOtp}</Text> : null}
+          <DevOtpBanner
+            otp={devOtp}
+            length={OTP_LENGTH}
+            onFill={setOtp}
+            style={styles.devOtpSpacing}
+          />
 
           <View style={styles.otpRow}>
             {otp.map((digit, i) => (
@@ -168,18 +174,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '800', color: colors.text },
   hint: { fontSize: 13, color: colors.textSecondary, lineHeight: 18, marginBottom: 14 },
   phone: { fontWeight: '700', color: colors.text },
-  devOtp: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#d97706',
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    overflow: 'hidden',
-  },
+  devOtpSpacing: { marginBottom: 16 },
   otpRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
