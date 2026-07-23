@@ -94,6 +94,40 @@ export const fetchTransporterOrders = status =>
 // GET /transporter/orders/:id — resolves to { order, items }.
 export const fetchTransporterOrderById = id => api.get(`/transporter/orders/${id}`);
 
+// GET /transporter/dashboard/vendors — the vendors this transporter currently
+// has active orders for, one row per vendor, e.g.
+//   { orderCount, vendorId, vendorName, vendorPhone, address: { line, state } }
+// `address` is whatever subset of line/city/state/pincode the vendor filled in.
+export const fetchTransporterDashboardVendors = () =>
+  api.get('/transporter/dashboard/vendors');
+
+// ─── QR pickup ────────────────────────────────────────────────────────────────
+
+// POST /transporter/orders/scan-pickup — previews what a vendor's pickup QR
+// contains without committing to it. Resolves to
+//   { token, orders: [{ order, items: [...] }], skipped: [{ orderId, reason }] }
+// where each `order` has customerId and deliverySlotId populated, and each item
+// has productVariantId.productId populated with name/unit.
+export const scanPickupQr = token =>
+  api.post('/transporter/orders/scan-pickup', { token });
+
+// POST /transporter/orders/confirm-pickup — commits the handoff, moving every
+// eligible order in the batch to 'intransit'. Resolves to { assigned, skipped }.
+//
+// The backend takes only the token and picks up the WHOLE batch — there is no
+// partial-pickup support, so the app must not send a subset. The per-order
+// checkboxes in the confirm modal are a physical checklist for the transporter,
+// not a filter.
+//
+// `vehicleNo` may be omitted only when the transporter has exactly one vehicle
+// on file; otherwise the backend 400s asking which vehicle is being used. A
+// plate that isn't on file yet is appended to their vehicle list.
+export const confirmPickup = ({ token, vehicleNo }) =>
+  api.post('/transporter/orders/confirm-pickup', {
+    token,
+    ...(vehicleNo && { vehicleNo }),
+  });
+
 // PUT /user/profile — the shared self endpoint (any authenticated role).
 // Transporters can only self-update name and email here; `phone` is the OTP
 // identity and has no self-service route, so it stays read-only in the UI.

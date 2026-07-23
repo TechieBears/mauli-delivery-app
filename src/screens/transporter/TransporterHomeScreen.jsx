@@ -8,58 +8,56 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Phone } from 'phosphor-react-native';
 import {
+  useTransporterDashboardVendors,
   useTransporterOrders,
   useTransporterProfile,
 } from '../../hooks/useTransporterQueries';
 import { colors } from '../../theme/colors';
+import OrderRow from './OrderRow';
+import { formatAddress, STATUS_ACCEPTED } from './orderStatus';
 
-// Backend order enum: pending | confirmed | ready_for_pickup | intransit |
-// delivered | rejected | cancelled. A transporter only ever sees the last two
-// active states plus delivered, so only those are styled here.
-const STATUS_CONFIG = {
-  ready_for_pickup: { label: 'READY FOR PICKUP', bg: '#fef9c3', text: '#a16207' },
-  intransit: { label: 'IN TRANSIT', bg: '#dbeafe', text: '#1d4ed8' },
-  delivered: { label: 'DELIVERED', bg: '#dcfce7', text: '#15803d' },
-};
-
-const formatAddress = address => {
-  if (!address) return '';
-  if (typeof address === 'string') return address;
-  return [address.line, address.city, address.pincode].filter(Boolean).join(', ');
-};
-
-const OrderCard = ({ order, onPress }) => {
-  const cfg = STATUS_CONFIG[order.status] ?? {
-    label: String(order.status ?? '').toUpperCase(),
-    bg: colors.background,
-    text: colors.textSecondary,
-  };
-  const customer = order.customerId;
+const VendorCard = ({ vendor, onPress }) => {
+  const address = formatAddress(vendor.address);
+  const count = vendor.orderCount ?? 0;
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       <View style={styles.cardTop}>
-        <Text style={styles.orderNo}>#{order.orderNumber ?? String(order._id).slice(-6)}</Text>
-        <View style={[styles.chip, { backgroundColor: cfg.bg }]}>
-          <Text style={[styles.chipText, { color: cfg.text }]}>{cfg.label}</Text>
+        <Text style={styles.vendorName} numberOfLines={1}>
+          {vendor.vendorName ?? 'Vendor'}
+        </Text>
+        <View style={styles.chip}>
+          <Text style={styles.chipText}>
+            {count} {count === 1 ? 'ORDER' : 'ORDERS'}
+          </Text>
         </View>
       </View>
 
-      {customer?.businessName || customer?.name ? (
-        <Text style={styles.customer}>{customer.businessName ?? customer.name}</Text>
-      ) : null}
-
-      {formatAddress(customer?.address) ? (
+      {address ? (
         <Text style={styles.address} numberOfLines={2}>
-          {formatAddress(customer.address)}
+          {address}
         </Text>
       ) : null}
 
-      {order.totalAmount != null ? (
-        <Text style={styles.amount}>₹{order.totalAmount}</Text>
+      {vendor.vendorPhone ? (
+        // Nested inside the card's touchable, so the tap is stopped here —
+        // otherwise dialling would also push the vendor detail screen.
+        <TouchableOpacity
+          style={styles.phoneRow}
+          onPress={e => {
+            e.stopPropagation();
+            Linking.openURL(`tel:${vendor.vendorPhone}`);
+          }}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Phone size={16} color={colors.primary} weight="fill" />
+          <Text style={styles.phone}>{vendor.vendorPhone}</Text>
+        </TouchableOpacity>
       ) : null}
     </TouchableOpacity>
   );
@@ -73,14 +71,20 @@ const greetingForHour = hour => {
 };
 
 const TransporterHomeScreen = ({ navigation }) => {
-  const { data, isLoading, error, refetch, isFetching } = useTransporterOrders();
+  const { data, isLoading, error, refetch, isFetching } =
+    useTransporterDashboardVendors();
   const { data: profileRes } = useTransporterProfile();
+
+  // Orders already picked up (confirm-pickup moved them to intransit).
+  const { data: acceptedRes, refetch: refetchAccepted } =
+    useTransporterOrders(STATUS_ACCEPTED);
+  const accepted = Array.isArray(acceptedRes?.data) ? acceptedRes.data : [];
 
   const firstName = (profileRes?.data?.userId?.name ?? '').split(' ')[0];
   const greeting = greetingForHour(new Date().getHours());
 
-  // paginated() responds { success, message, data: [...], pagination }.
-  const orders = Array.isArray(data?.data) ? data.data : [];
+  // Responds { success, message, data: [...] } — one row per vendor.
+  const vendors = Array.isArray(data?.data) ? data.data : [];
 
   if (isLoading) {
     return (
@@ -99,32 +103,64 @@ const TransporterHomeScreen = ({ navigation }) => {
           {greeting}
           {firstName ? `, ${firstName}` : ''}
         </Text>
-        <Text style={styles.subtitle}>Recent orders</Text>
       </View>
 
       <FlatList
-        data={orders}
-        keyExtractor={item => String(item._id)}
+        data={vendors}
+        keyExtractor={item => String(item.vendorId)}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={refetch} tintColor={colors.primary} />
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={() => {
+              refetch();
+              refetchAccepted();
+            }}
+            tintColor={colors.primary}
+          />
+        }
+        ListHeaderComponent={
+          <>
+            {accepted.length ? (
+              <View style={styles.acceptedBlock}>
+                <Text style={styles.sectionTitle}>
+                  Accepted · in transit ({accepted.length})
+                </Text>
+                {accepted.map(order => (
+                  <OrderRow
+                    key={String(order._id)}
+                    order={order}
+                    compact
+                    onPress={() =>
+                      navigation.navigate('TransporterOrderDetail', {
+                        id: order._id,
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            ) : null}
+            <Text style={styles.sectionTitle}>Your vendors</Text>
+          </>
         }
         renderItem={({ item }) => (
-          <OrderCard
-            order={item}
-            onPress={() => navigation.navigate('TransporterOrderDetail', { id: item._id })}
+          <VendorCard
+            vendor={item}
+            onPress={() =>
+              navigation.navigate('TransporterVendorDetail', { vendor: item })
+            }
           />
         )}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyTitle}>
-              {error ? "Couldn't load deliveries" : 'No deliveries yet'}
+              {error ? "Couldn't load vendors" : 'No vendors yet'}
             </Text>
             <Text style={styles.emptyBody}>
               {error
                 ? error.message ?? 'Please pull down to try again.'
-                : 'Orders assigned to you will show up here.'}
+                : 'Vendors with orders assigned to you will show up here.'}
             </Text>
           </View>
         }
@@ -143,10 +179,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 4,
   },
-  subtitle: {
+  sectionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '800',
     color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  // Separates the in-transit strip from the vendor list below it.
+  acceptedBlock: {
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   // The screen omits the 'bottom' safe-area edge (the tab bar owns it), so the
   // list pads itself enough for the last card to clear the tab bar.
@@ -166,12 +210,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 8,
   },
-  orderNo: { fontSize: 15, fontWeight: '800', color: colors.text },
-  chip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  chipText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6 },
-  customer: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 4 },
+  vendorName: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.text, marginRight: 8 },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+  },
+  chipText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.6, color: colors.primary },
   address: { fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
-  amount: { fontSize: 15, fontWeight: '800', color: colors.primary, marginTop: 10 },
+  phoneRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 6 },
+  phone: { fontSize: 14, fontWeight: '700', color: colors.primary },
 
   emptyWrap: {
     flex: 1,

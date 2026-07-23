@@ -16,6 +16,9 @@ import {
   TransporterProfileDetailsScreen,
   TransporterDeliveryHistoryScreen,
   TransporterOrderDetailScreen,
+  TransporterVendorDetailScreen,
+  PickupScannerScreen,
+  TransporterMyOrdersScreen,
 } from '../screens/transporter';
 
 const Stack = createNativeStackNavigator();
@@ -94,6 +97,25 @@ const RootNavigator = () => (
         name="TransporterOrderDetail"
         component={TransporterOrderDetailScreen}
         options={{ title: 'Order Details', headerBackTitle: '' }}
+      />
+      <Stack.Screen
+        name="TransporterMyOrders"
+        component={TransporterMyOrdersScreen}
+        options={{ title: 'My Orders', headerBackTitle: '' }}
+      />
+      <Stack.Screen
+        name="TransporterVendorDetail"
+        component={TransporterVendorDetailScreen}
+        options={({ route }) => ({
+          title: route?.params?.vendor?.vendorName ?? 'Vendor',
+          headerBackTitle: '',
+        })}
+      />
+      {/* Full-bleed camera: its own dark header would fight the preview. */}
+      <Stack.Screen
+        name="PickupScanner"
+        component={PickupScannerScreen}
+        options={{ title: 'Scan Pickup QR', headerBackTitle: '', headerTransparent: true }}
       />
       <Stack.Screen
         name="HelpSupport"

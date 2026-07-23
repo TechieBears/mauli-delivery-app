@@ -5,14 +5,20 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Location, Call, Truck, TickCircle, Box } from 'iconsax-react-native';
 import { useTransporterOrder } from '../../hooks/useTransporterQueries';
+import {
+  formatAddress,
+  orderLabel,
+  customerName,
+  customerPhone,
+  telHref,
+} from './orderStatus';
 import { colors } from '../../theme/colors';
-
-const formatINR = amount =>
-  '₹' + Number(amount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
 const formatDateTime = iso => {
   if (!iso) return '—';
@@ -25,14 +31,8 @@ const formatDateTime = iso => {
   })}, ${d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`;
 };
 
-const formatAddress = address => {
-  if (!address) return '';
-  if (typeof address === 'string') return address;
-  return [address.line, address.city, address.pincode].filter(Boolean).join(', ');
-};
-
 const STATUS_CONFIG = {
-  ready_for_pickup: { label: 'READY FOR PICKUP', color: '#a16207' },
+  transporter_assigned: { label: 'ASSIGNED', color: '#a16207' },
   intransit: { label: 'IN TRANSIT', color: '#1d4ed8' },
   delivered: { label: 'DELIVERED', color: '#15803d' },
 };
@@ -83,27 +83,33 @@ const TransporterOrderDetailScreen = ({ route }) => {
 
         {/* Summary */}
         <View style={styles.headerCard}>
-          <Text style={styles.orderId}>
-            #{order.orderNumber ?? String(order._id).slice(-6)}
-          </Text>
+          <Text style={styles.orderId}>{orderLabel(order)}</Text>
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, { backgroundColor: cfg.color }]} />
             <Text style={[styles.statusLabel, { color: cfg.color }]}>{cfg.label}</Text>
           </View>
-          <Text style={styles.amount}>{formatINR(order.totalAmount)}</Text>
         </View>
 
         {/* Customer */}
         {customer ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Customer</Text>
-            {customer.businessName || customer.name ? (
-              <Text style={styles.customerName}>
-                {customer.businessName ?? customer.name}
-              </Text>
+            {customerName(customer) ? (
+              <Text style={styles.customerName}>{customerName(customer)}</Text>
             ) : null}
             <InfoRow Icon={Location} text={formatAddress(customer.address)} />
-            <InfoRow Icon={Call} text={customer.phone} />
+            {customerPhone(customer) ? (
+              <TouchableOpacity
+                style={styles.infoRow}
+                onPress={() => Linking.openURL(telHref(customerPhone(customer)))}
+                activeOpacity={0.7}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                <Call size={14} color={colors.primary} variant="Bold" />
+                <Text style={[styles.infoText, styles.phoneText]}>
+                  {customerPhone(customer)}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : null}
 
@@ -137,7 +143,6 @@ const TransporterOrderDetailScreen = ({ route }) => {
                         .join(' • ')}
                     </Text>
                   </View>
-                  <Text style={styles.itemPrice}>{formatINR(item.price)}</Text>
                 </View>
               );
             })
@@ -204,7 +209,6 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusLabel: { fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
-  amount: { fontSize: 24, fontWeight: '800', color: colors.primary, marginTop: 10 },
 
   card: {
     backgroundColor: colors.surface,
@@ -222,6 +226,7 @@ const styles = StyleSheet.create({
   customerName: { fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
   infoText: { flex: 1, fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
+  phoneText: { color: colors.primary, fontWeight: '700' },
 
   itemsBadge: {
     backgroundColor: colors.primaryLight,
@@ -244,7 +249,6 @@ const styles = StyleSheet.create({
   itemMeta: { flex: 1 },
   itemName: { fontSize: 14, fontWeight: '700', color: colors.text },
   itemDetail: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
-  itemPrice: { fontSize: 14, fontWeight: '800', color: colors.text },
 
   deliveryCard: {
     backgroundColor: '#fffbeb',

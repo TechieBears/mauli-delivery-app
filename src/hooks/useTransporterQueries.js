@@ -3,6 +3,9 @@ import {
   fetchTransporterProfile,
   fetchTransporterOrders,
   fetchTransporterOrderById,
+  fetchTransporterDashboardVendors,
+  scanPickupQr,
+  confirmPickup,
   updateTransporterProfile,
   updateUserProfile,
 } from '../services/transporterService';
@@ -28,6 +31,15 @@ export const useTransporterOrders = (status, enabled = true) =>
     refetchOnMount: 'always',
   });
 
+export const useTransporterDashboardVendors = (enabled = true) =>
+  useQuery({
+    queryKey: ['transporterDashboardVendors'],
+    queryFn: fetchTransporterDashboardVendors,
+    enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+
 export const useTransporterOrder = (id, enabled = true) =>
   useQuery({
     queryKey: ['transporterOrder', id],
@@ -36,6 +48,24 @@ export const useTransporterOrder = (id, enabled = true) =>
     staleTime: 0,
     refetchOnMount: 'always',
   });
+
+// Preview-only — deliberately a mutation rather than a query, since scanning is
+// a user action against a one-shot token and must never be refetched or cached.
+export const useScanPickupQr = () =>
+  useMutation({ mutationFn: scanPickupQr });
+
+// On success every order in the batch has moved to 'intransit', which changes
+// both the vendor dashboard counts and the assigned-orders list.
+export const useConfirmPickup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: confirmPickup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transporterDashboardVendors'] });
+      queryClient.invalidateQueries({ queryKey: ['transporterOrders'] });
+    },
+  });
+};
 
 export const useUpdateTransporterProfile = () => {
   const queryClient = useQueryClient();

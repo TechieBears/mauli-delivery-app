@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Profile,
   ClipboardText,
+  Box,
+  Truck,
   Car,
   MessageQuestion,
   ArrowRight2,
@@ -24,6 +26,7 @@ import {
   useTransporterProfile,
   useTransporterOrders,
 } from '../../hooks/useTransporterQueries';
+import { STATUS_ASSIGNED, STATUS_ACCEPTED } from './orderStatus';
 import { resetToLogin } from '../../navigation/navigationRef';
 import { colors } from '../../theme/colors';
 
@@ -77,7 +80,8 @@ const TransporterProfileScreen = ({ navigation }) => {
   const [showLogout, setShowLogout] = useState(false);
 
   const { data: profileRes } = useTransporterProfile();
-  const { data: activeRes } = useTransporterOrders();
+  const { data: assignedRes } = useTransporterOrders(STATUS_ASSIGNED);
+  const { data: acceptedRes } = useTransporterOrders(STATUS_ACCEPTED);
   const { data: deliveredRes } = useTransporterOrders('delivered');
 
   const profile = profileRes?.data;
@@ -88,7 +92,8 @@ const TransporterProfileScreen = ({ navigation }) => {
   const isVerified = profile?.kycStatus === 'approved';
 
   // Totals come from the paginated envelope, not the page length (capped at 20).
-  const activeCount = activeRes?.pagination?.total ?? 0;
+  const assignedCount = assignedRes?.pagination?.total ?? 0;
+  const acceptedCount = acceptedRes?.pagination?.total ?? 0;
   const deliveredCount = deliveredRes?.pagination?.total ?? 0;
 
   const menu = [
@@ -104,6 +109,20 @@ const TransporterProfileScreen = ({ navigation }) => {
       desc: 'Your vehicle and driving licence',
       Icon: Car,
       value: profile?.vehicles?.[0]?.vehicleNo,
+    },
+    {
+      id: 'assigned',
+      label: 'Assigned Orders',
+      desc: 'Given to you, waiting for pickup',
+      Icon: Box,
+      value: assignedCount ? String(assignedCount) : undefined,
+    },
+    {
+      id: 'accepted',
+      label: 'Accepted Orders',
+      desc: 'Picked up and in transit',
+      Icon: Truck,
+      value: acceptedCount ? String(acceptedCount) : undefined,
     },
     {
       id: 'orders',
@@ -129,6 +148,12 @@ const TransporterProfileScreen = ({ navigation }) => {
   const handleMenuPress = id => {
     if (id === 'details' || id === 'vehicle') {
       navigation.navigate('TransporterProfileDetails');
+      return;
+    }
+    if (id === 'assigned' || id === 'accepted') {
+      navigation.navigate('TransporterMyOrders', {
+        tab: id === 'accepted' ? STATUS_ACCEPTED : STATUS_ASSIGNED,
+      });
       return;
     }
     if (id === 'orders') {
@@ -173,8 +198,13 @@ const TransporterProfileScreen = ({ navigation }) => {
         {/* Delivery stats */}
         <View style={styles.statsCard}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{activeCount}</Text>
-            <Text style={styles.statLabel}>ACTIVE</Text>
+            <Text style={styles.statValue}>{assignedCount}</Text>
+            <Text style={styles.statLabel}>ASSIGNED</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{acceptedCount}</Text>
+            <Text style={styles.statLabel}>ACCEPTED</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.stat}>

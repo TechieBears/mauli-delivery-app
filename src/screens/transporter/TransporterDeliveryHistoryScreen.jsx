@@ -11,10 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box, TickCircle, ArrowRight2 } from 'iconsax-react-native';
 import { useTransporterOrders } from '../../hooks/useTransporterQueries';
+import { orderLabel, customerName } from './orderStatus';
 import { colors } from '../../theme/colors';
-
-const formatINR = amount =>
-  '₹' + Number(amount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
 const formatDate = iso => {
   if (!iso) return '';
@@ -42,9 +40,7 @@ const HistoryCard = ({ order, onViewDetails }) => {
           <Box size={18} color={colors.primary} variant="Linear" />
         </View>
         <View style={styles.orderMeta}>
-          <Text style={styles.orderId}>
-            #{order.orderNumber ?? String(order._id).slice(-6)}
-          </Text>
+          <Text style={styles.orderId}>{orderLabel(order)}</Text>
           <Text style={styles.orderDate}>
             {[formatDate(when), formatTime(when)].filter(Boolean).join(' • ')}
           </Text>
@@ -58,7 +54,9 @@ const HistoryCard = ({ order, onViewDetails }) => {
       <View style={styles.divider} />
 
       <View style={styles.cardBottom}>
-        <Text style={styles.amount}>{formatINR(order.totalAmount)}</Text>
+        <Text style={styles.customer} numberOfLines={1}>
+          {customerName(order.customerId)}
+        </Text>
         <TouchableOpacity style={styles.viewDetailsBtn} onPress={onViewDetails} activeOpacity={0.7}>
           <Text style={styles.viewDetailsText}>View Details</Text>
           <ArrowRight2 size={12} color={colors.primary} variant="Linear" />
@@ -176,7 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
   },
-  amount: { fontSize: 15, fontWeight: '800', color: colors.text },
+  customer: { flex: 1, fontSize: 14, fontWeight: '700', color: colors.text, marginRight: 12 },
   viewDetailsBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   viewDetailsText: { fontSize: 12, fontWeight: '700', color: colors.primary },
 

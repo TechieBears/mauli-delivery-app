@@ -3,3 +3,6 @@ export { default as TransporterProfileScreen } from './TransporterProfileScreen'
 export { default as TransporterProfileDetailsScreen } from './TransporterProfileDetailsScreen';
 export { default as TransporterDeliveryHistoryScreen } from './TransporterDeliveryHistoryScreen';
 export { default as TransporterOrderDetailScreen } from './TransporterOrderDetailScreen';
+export { default as TransporterVendorDetailScreen } from './TransporterVendorDetailScreen';
+export { default as PickupScannerScreen } from './PickupScannerScreen';
+export { default as TransporterMyOrdersScreen } from './TransporterMyOrdersScreen';
