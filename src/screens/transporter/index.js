@@ -6,3 +6,4 @@ export { default as TransporterOrderDetailScreen } from './TransporterOrderDetai
 export { default as TransporterVendorDetailScreen } from './TransporterVendorDetailScreen';
 export { default as PickupScannerScreen } from './PickupScannerScreen';
 export { default as TransporterMyOrdersScreen } from './TransporterMyOrdersScreen';
+export { default as TransporterVendorOrdersScreen } from './TransporterVendorOrdersScreen';

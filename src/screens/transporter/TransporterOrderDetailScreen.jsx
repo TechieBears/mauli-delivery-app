@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,17 @@ import {
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Location, Call, Truck, TickCircle, Box } from 'iconsax-react-native';
+import { Location, Call, Truck, TickCircle, Box, Clock } from 'iconsax-react-native';
 import { useTransporterOrder } from '../../hooks/useTransporterQueries';
+import DeliveryValidationModal from './DeliveryValidationModal';
+import { STATUS_ACCEPTED } from './orderStatus';
 import {
   formatAddress,
   orderLabel,
   customerName,
   customerPhone,
   telHref,
+  slotLabel,
 } from './orderStatus';
 import { colors } from '../../theme/colors';
 
@@ -45,9 +48,10 @@ const InfoRow = ({ Icon, text }) =>
     </View>
   ) : null;
 
-const TransporterOrderDetailScreen = ({ route }) => {
+const TransporterOrderDetailScreen = ({ navigation, route }) => {
   const id = route?.params?.id;
   const { data, isLoading, error } = useTransporterOrder(id);
+  const [validating, setValidating] = useState(false);
 
   // GET /transporter/orders/:id resolves to { order, items }.
   const order = data?.data?.order;
@@ -157,6 +161,12 @@ const TransporterOrderDetailScreen = ({ route }) => {
             </View>
             <Text style={styles.deliveryTitle}>Delivery</Text>
           </View>
+          {slotLabel(order) ? (
+            <View style={styles.deliveryRow}>
+              <Clock size={13} color="#92400e" variant="Linear" />
+              <Text style={styles.deliveryText}>Slot: {slotLabel(order)}</Text>
+            </View>
+          ) : null}
           {order.deliveryBoy?.vehicleNo ? (
             <View style={styles.deliveryRow}>
               <Truck size={13} color="#92400e" variant="Linear" />
@@ -189,12 +199,51 @@ const TransporterOrderDetailScreen = ({ route }) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Handover is only possible while the order is in transit. */}
+      {order.status === STATUS_ACCEPTED ? (
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.validateBtn}
+            onPress={() => setValidating(true)}
+            activeOpacity={0.85}>
+            <TickCircle size={20} color={colors.surface} variant="Bold" />
+            <Text style={styles.validateBtnText}>Validate customer</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      <DeliveryValidationModal
+        visible={validating}
+        order={order}
+        onClose={() => setValidating(false)}
+        onDelivered={() => {
+          setValidating(false);
+          navigation?.goBack();
+        }}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f5f7f4' },
+  footer: {
+    padding: 16,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  validateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: colors.primary,
+    paddingVertical: 16,
+    borderRadius: 14,
+  },
+  validateBtnText: { fontSize: 16, fontWeight: '800', color: colors.surface },
   center: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   scroll: { padding: 16, paddingBottom: 32 },
 

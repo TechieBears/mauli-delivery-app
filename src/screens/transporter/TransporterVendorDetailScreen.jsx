@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,90 +9,40 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Phone, MapPin, Package, QrCode, Truck } from 'phosphor-react-native';
-import {
-  useScanPickupQr,
-  useConfirmPickup,
-  useTransporterProfile,
-} from '../../hooks/useTransporterQueries';
+import { useTransporterDashboardVendors } from '../../hooks/useTransporterQueries';
 import PickupConfirmModal from './PickupConfirmModal';
+import usePickupFlow from './usePickupFlow';
+import { formatAddress, STATUS_ASSIGNED } from './orderStatus';
 import { colors } from '../../theme/colors';
-import toast from '../../utils/toast';
-
-const formatAddress = address => {
-  if (!address) return '';
-  if (typeof address === 'string') return address;
-  return [address.line, address.city, address.state, address.pincode]
-    .filter(Boolean)
-    .join(', ');
-};
 
 const TransporterVendorDetailScreen = ({ navigation, route }) => {
   const vendor = route?.params?.vendor ?? {};
   const address = formatAddress(vendor.address);
-  const orderCount = vendor.orderCount ?? 0;
 
-  const [scan, setScan] = useState(null);
-  const [vehicleNo, setVehicleNo] = useState(null);
-
-  const { data: profileRes } = useTransporterProfile();
-  const vehicles = (profileRes?.data?.vehicles ?? [])
-    .map(v => v?.vehicleNo)
-    .filter(Boolean);
-
-  const { mutate: scanQr, isPending: scanning } = useScanPickupQr();
-  const { mutate: confirm, isPending: confirming } = useConfirmPickup();
-
-  // The backend only lets vehicleNo be omitted when exactly one vehicle is on
-  // file; with several it 400s asking which one. Default to the sole vehicle so
-  // the common case needs no picker.
-  const effectiveVehicle = vehicleNo ?? (vehicles.length === 1 ? vehicles[0] : null);
-
-  const handleScanned = useCallback(
-    token => {
-      scanQr(token, {
-        onSuccess: res => setScan(res?.data ?? null),
-        onError: err =>
-          toast.error(
-            'Scan failed',
-            err?.message ?? 'This QR code could not be read.',
-          ),
-      });
-    },
-    [scanQr],
+  // The count passed in nav params is a snapshot from whenever the list was
+  // last fetched, so it goes stale the moment a pickup is confirmed. Re-read the
+  // pending-only count here (served from cache) and fall back to the param.
+  const { data: vendorsRes } = useTransporterDashboardVendors(STATUS_ASSIGNED);
+  const liveVendor = (vendorsRes?.data ?? []).find(
+    v => String(v.vendorId) === String(vendor.vendorId),
   );
+  const orderCount = liveVendor?.orderCount ?? vendor.orderCount ?? 0;
 
-  const openScanner = () => {
-    if (vehicles.length > 1 && !effectiveVehicle) {
-      toast.warning('Pick a vehicle', 'Choose which vehicle is making this pickup.');
-      return;
-    }
-    navigation.navigate('PickupScanner', {
-      vendorName: vendor.vendorName,
-      onScanned: handleScanned,
-    });
-  };
-
-  const handleConfirm = () => {
-    confirm(
-      { token: scan?.token, vehicleNo: effectiveVehicle },
-      {
-        onSuccess: res => {
-          const assigned = res?.data?.assigned?.length ?? 0;
-          setScan(null);
-          toast.success(
-            'Pickup confirmed',
-            `${assigned} ${assigned === 1 ? 'order is' : 'orders are'} now in transit.`,
-          );
-          navigation.goBack();
-        },
-        onError: err =>
-          toast.error(
-            'Could not confirm pickup',
-            err?.message ?? 'Please try again.',
-          ),
-      },
-    );
-  };
+  const {
+    scan,
+    closeScan,
+    scanning,
+    confirming,
+    openScanner,
+    confirmPickup,
+    vehicles,
+    effectiveVehicle,
+    setVehicleNo,
+  } = usePickupFlow({
+    navigation,
+    vendorName: vendor.vendorName,
+    onConfirmed: () => navigation.goBack(),
+  });
 
   return (
     <SafeAreaView style={styles.screen} edges={['bottom']}>
@@ -170,8 +120,8 @@ const TransporterVendorDetailScreen = ({ navigation, route }) => {
         visible={!!scan}
         scan={scan}
         submitting={confirming}
-        onClose={() => setScan(null)}
-        onConfirm={handleConfirm}
+        onClose={closeScan}
+        onConfirm={confirmPickup}
       />
     </SafeAreaView>
   );

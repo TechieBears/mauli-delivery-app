@@ -55,3 +55,24 @@ export const customerPhone = customer => {
 
 // Strip spaces so `tel:` gets a dialable string ("+91 8798789877" → "+918798789877").
 export const telHref = phone => `tel:${String(phone).replace(/\s+/g, '')}`;
+
+// `deliverySlotId` is populated to { startTime, endTime, ... } as "HH:mm"
+// strings — "06:00" – "07:00". Returns '' when the order has no slot.
+export const slotWindow = order => {
+  const slot = order?.deliverySlotId;
+  if (!slot?.startTime || !slot?.endTime) return '';
+  return `${slot.startTime} – ${slot.endTime}`;
+};
+
+// "22 Jul" — the day the slot falls on, omitted when absent.
+export const slotDate = order => {
+  const iso = order?.deliveryDate;
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+};
+
+// "22 Jul · 06:00 – 07:00", or whichever half is available.
+export const slotLabel = order =>
+  [slotDate(order), slotWindow(order)].filter(Boolean).join(' · ');

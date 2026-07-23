@@ -94,12 +94,19 @@ export const fetchTransporterOrders = status =>
 // GET /transporter/orders/:id — resolves to { order, items }.
 export const fetchTransporterOrderById = id => api.get(`/transporter/orders/${id}`);
 
-// GET /transporter/dashboard/vendors — the vendors this transporter currently
-// has active orders for, one row per vendor, e.g.
+// GET /transporter/dashboard/vendors — the vendors this transporter has orders
+// for, one row per vendor, e.g.
 //   { orderCount, vendorId, vendorName, vendorPhone, address: { line, state } }
 // `address` is whatever subset of line/city/state/pincode the vendor filled in.
-export const fetchTransporterDashboardVendors = () =>
-  api.get('/transporter/dashboard/vendors');
+//
+// Without `status` the backend counts EVERY order ever assigned — including
+// delivered and cancelled ones — so callers showing a "pending pickup" count
+// must pass status=transporter_assigned, or a vendor whose orders are already
+// picked up would still show a non-zero count.
+export const fetchTransporterDashboardVendors = status =>
+  api.get('/transporter/dashboard/vendors', {
+    params: status ? { status } : undefined,
+  });
 
 // ─── QR pickup ────────────────────────────────────────────────────────────────
 
@@ -126,6 +133,30 @@ export const confirmPickup = ({ token, vehicleNo }) =>
   api.post('/transporter/orders/confirm-pickup', {
     token,
     ...(vehicleNo && { vehicleNo }),
+  });
+
+// ─── Delivery handover ────────────────────────────────────────────────────────
+
+// POST /transporter/orders/:id/send-delivery-otp — texts a 10-minute OTP to
+// `receiverPhone`. Both fields are REQUIRED by the validator even though the
+// receiver is only persisted at verify time; a bare {} responds 400.
+//
+// The order must be 'intransit'. In development the backend echoes the OTP back
+// as { otp } so it can be read without an SMS gateway; in production data is {}.
+export const sendDeliveryOtp = ({ id, receiverName, receiverPhone }) =>
+  api.post(`/transporter/orders/${id}/send-delivery-otp`, {
+    receiverName,
+    receiverPhone,
+  });
+
+// POST /transporter/orders/:id/verify-delivery-otp — on success the order flips
+// to 'delivered', `receiver` is stamped with these details, and the complaint
+// window opens. receiverName/receiverPhone are required here too.
+export const verifyDeliveryOtp = ({ id, otp, receiverName, receiverPhone }) =>
+  api.post(`/transporter/orders/${id}/verify-delivery-otp`, {
+    otp,
+    receiverName,
+    receiverPhone,
   });
 
 // PUT /user/profile — the shared self endpoint (any authenticated role).

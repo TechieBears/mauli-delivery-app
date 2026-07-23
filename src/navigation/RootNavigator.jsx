@@ -19,6 +19,7 @@ import {
   TransporterVendorDetailScreen,
   PickupScannerScreen,
   TransporterMyOrdersScreen,
+  TransporterVendorOrdersScreen,
 } from '../screens/transporter';
 
 const Stack = createNativeStackNavigator();
@@ -101,7 +102,15 @@ const RootNavigator = () => (
       <Stack.Screen
         name="TransporterMyOrders"
         component={TransporterMyOrdersScreen}
-        options={{ title: 'My Orders', headerBackTitle: '' }}
+        options={{ title: 'Order History', headerBackTitle: '' }}
+      />
+      <Stack.Screen
+        name="TransporterVendorOrders"
+        component={TransporterVendorOrdersScreen}
+        options={({ route }) => ({
+          title: route?.params?.vendor?.vendorName ?? 'Vendor Orders',
+          headerBackTitle: '',
+        })}
       />
       <Stack.Screen
         name="TransporterVendorDetail"

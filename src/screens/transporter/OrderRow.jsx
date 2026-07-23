@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
-import { Phone, MapPin } from 'phosphor-react-native';
+import { Phone, MapPin, Clock } from 'phosphor-react-native';
 import { colors } from '../../theme/colors';
 import {
   statusConfig,
@@ -9,6 +9,7 @@ import {
   customerName,
   customerPhone,
   telHref,
+  slotLabel,
 } from './orderStatus';
 
 /**
@@ -22,6 +23,7 @@ const OrderRow = ({ order, onPress, compact }) => {
   const address = formatAddress(customer?.address);
   const name = customerName(customer);
   const phone = customerPhone(customer);
+  const slot = slotLabel(order);
 
   return (
     <TouchableOpacity
@@ -65,6 +67,13 @@ const OrderRow = ({ order, onPress, compact }) => {
           <Text style={styles.phone}>{phone}</Text>
         </TouchableOpacity>
       ) : null}
+
+      {slot ? (
+        <View style={styles.infoRow}>
+          <Clock size={14} color={colors.textMuted} weight="fill" />
+          <Text style={styles.slot}>{slot}</Text>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 };
@@ -92,6 +101,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   address: { flex: 1, fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
   phone: { fontSize: 13, fontWeight: '700', color: colors.primary },
+  slot: { fontSize: 13, fontWeight: '700', color: colors.textSecondary },
 });
 
 export default OrderRow;

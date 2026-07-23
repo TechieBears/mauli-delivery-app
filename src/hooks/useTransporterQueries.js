@@ -6,6 +6,8 @@ import {
   fetchTransporterDashboardVendors,
   scanPickupQr,
   confirmPickup,
+  sendDeliveryOtp,
+  verifyDeliveryOtp,
   updateTransporterProfile,
   updateUserProfile,
 } from '../services/transporterService';
@@ -31,10 +33,11 @@ export const useTransporterOrders = (status, enabled = true) =>
     refetchOnMount: 'always',
   });
 
-export const useTransporterDashboardVendors = (enabled = true) =>
+// `status` is part of the key so switching the filter refetches.
+export const useTransporterDashboardVendors = (status, enabled = true) =>
   useQuery({
-    queryKey: ['transporterDashboardVendors'],
-    queryFn: fetchTransporterDashboardVendors,
+    queryKey: ['transporterDashboardVendors', status ?? 'all'],
+    queryFn: () => fetchTransporterDashboardVendors(status),
     enabled,
     staleTime: 0,
     refetchOnMount: 'always',
@@ -63,6 +66,23 @@ export const useConfirmPickup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transporterDashboardVendors'] });
       queryClient.invalidateQueries({ queryKey: ['transporterOrders'] });
+    },
+  });
+};
+
+export const useSendDeliveryOtp = () =>
+  useMutation({ mutationFn: sendDeliveryOtp });
+
+// On success the order is 'delivered', so it leaves the active/accepted lists
+// and enters delivery history.
+export const useVerifyDeliveryOtp = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: verifyDeliveryOtp,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['transporterOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['transporterDashboardVendors'] });
+      queryClient.invalidateQueries({ queryKey: ['transporterOrder', variables?.id] });
     },
   });
 };

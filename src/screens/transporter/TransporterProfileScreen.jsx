@@ -13,8 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Profile,
   ClipboardText,
-  Box,
-  Truck,
   Car,
   MessageQuestion,
   ArrowRight2,
@@ -111,25 +109,11 @@ const TransporterProfileScreen = ({ navigation }) => {
       value: profile?.vehicles?.[0]?.vehicleNo,
     },
     {
-      id: 'assigned',
-      label: 'Assigned Orders',
-      desc: 'Given to you, waiting for pickup',
-      Icon: Box,
-      value: assignedCount ? String(assignedCount) : undefined,
-    },
-    {
-      id: 'accepted',
-      label: 'Accepted Orders',
-      desc: 'Picked up and in transit',
-      Icon: Truck,
-      value: acceptedCount ? String(acceptedCount) : undefined,
-    },
-    {
       id: 'orders',
-      label: 'Delivery History',
-      desc: 'Orders you have delivered',
+      label: 'Order History',
+      desc: 'Accepted, assigned and delivered orders',
       Icon: ClipboardText,
-      value: deliveredCount ? String(deliveredCount) : undefined,
+      value: String(assignedCount + acceptedCount + deliveredCount),
     },
     {
       id: 'help',
@@ -150,14 +134,8 @@ const TransporterProfileScreen = ({ navigation }) => {
       navigation.navigate('TransporterProfileDetails');
       return;
     }
-    if (id === 'assigned' || id === 'accepted') {
-      navigation.navigate('TransporterMyOrders', {
-        tab: id === 'accepted' ? STATUS_ACCEPTED : STATUS_ASSIGNED,
-      });
-      return;
-    }
     if (id === 'orders') {
-      navigation.navigate('TransporterDeliveryHistory');
+      navigation.navigate('TransporterMyOrders', { tab: STATUS_ACCEPTED });
       return;
     }
     if (id === 'help') navigation.navigate('HelpSupport');
