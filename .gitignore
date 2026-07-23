@@ -33,7 +33,15 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+*.jks
+!production-file.jks
 .kotlin/
+
+# Android build outputs
+*.apk
+*.aab
+*.dm
+/android/app/release/
 
 # node.js
 #
