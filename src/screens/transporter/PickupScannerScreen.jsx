@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,21 +8,16 @@ import {
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  Camera,
-  useCameraDevice,
-  useCameraPermission,
-  useObjectOutput,
-  isScannedCode,
-} from 'react-native-vision-camera';
+import { Camera } from 'react-native-camera-kit';
 import { useIsFocused } from '@react-navigation/native';
 import { colors } from '../../theme/colors';
+import { ensureCameraPermission } from '../../services/permissions';
 
-// vision-camera v5 is outputs-based: scanning is a CameraObjectOutput created by
-// useObjectOutput and handed to <Camera outputs={[...]} />. (The v3/v4
-// useCodeScanner API no longer exists.)
-const SCAN_TYPES = ['qr'];
-
+// QR scanning uses react-native-camera-kit's built-in barcode scanner
+// (scanBarcode + onReadCode). vision-camera v5's useObjectOutput API is
+// iOS-only — its Android factory throws "CameraObjectOutput is not available
+// on Android!", which crashed the app the moment this screen opened.
+//
 // The camera is torn down whenever the screen loses focus so it doesn't keep
 // running behind the confirm modal or after navigating away.
 const PickupScannerScreen = ({ navigation, route }) => {
@@ -30,20 +25,30 @@ const PickupScannerScreen = ({ navigation, route }) => {
   const onScanned = route?.params?.onScanned;
 
   const isFocused = useIsFocused();
-  const device = useCameraDevice('back');
-  const { hasPermission, requestPermission, canRequestPermission } =
-    useCameraPermission();
+
+  // Permission gate. On iOS the <Camera> triggers the system prompt on first
+  // use; on Android we request explicitly via the shared helper. `granted` is
+  // undefined until we know, so we can show a spinner instead of flashing the
+  // "access needed" screen.
+  const [granted, setGranted] = useState(undefined);
+  const [error, setError] = useState('');
+
+  const requestPermission = useCallback(async () => {
+    try {
+      const ok = await ensureCameraPermission();
+      setGranted(ok);
+    } catch {
+      setGranted(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    requestPermission();
+  }, [requestPermission]);
 
   // A single QR fills several frames, so without this latch the same token
   // fires onScanned dozens of times before the screen unmounts.
   const handled = useRef(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!hasPermission && canRequestPermission) {
-      requestPermission();
-    }
-  }, [hasPermission, canRequestPermission, requestPermission]);
 
   const handleCode = useCallback(
     value => {
@@ -55,42 +60,15 @@ const PickupScannerScreen = ({ navigation, route }) => {
     [navigation, onScanned],
   );
 
-  const onObjectsScanned = useCallback(
-    objects => {
-      // Scanned objects are typed — only machine-readable codes carry `value`.
-      const code = objects?.find(o => isScannedCode(o) && o.value);
-      if (code) handleCode(code.value);
+  const onReadCode = useCallback(
+    event => {
+      const value = event?.nativeEvent?.codeStringValue;
+      if (value) handleCode(value);
     },
     [handleCode],
   );
 
-  // `types` is a useMemo dep inside useObjectOutput, so it must be a stable
-  // reference or the output would be recreated on every render.
-  const types = useMemo(() => SCAN_TYPES, []);
-  const objectOutput = useObjectOutput({ types, onObjectsScanned });
-  const outputs = useMemo(() => [objectOutput], [objectOutput]);
-
-  if (!hasPermission) {
-    return (
-      <SafeAreaView style={[styles.container, styles.center]}>
-        <Text style={styles.msgTitle}>Camera access needed</Text>
-        <Text style={styles.msgBody}>
-          Allow camera access to scan the vendor's pickup QR code.
-        </Text>
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={() =>
-            canRequestPermission ? requestPermission() : Linking.openSettings()
-          }>
-          <Text style={styles.btnText}>
-            {canRequestPermission ? 'Allow camera' : 'Open Settings'}
-          </Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  if (!device) {
+  if (granted === undefined) {
     return (
       <SafeAreaView style={[styles.container, styles.center]}>
         <ActivityIndicator size="large" color={colors.surface} />
@@ -99,15 +77,36 @@ const PickupScannerScreen = ({ navigation, route }) => {
     );
   }
 
+  if (!granted) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center]}>
+        <Text style={styles.msgTitle}>Camera access needed</Text>
+        <Text style={styles.msgBody}>
+          Allow camera access to scan the vendor's pickup QR code.
+        </Text>
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={() => Linking.openSettings()}>
+          <Text style={styles.btnText}>Open Settings</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Camera
-        style={StyleSheet.absoluteFill}
-        device={device}
-        outputs={outputs}
-        isActive={isFocused}
-        onError={e => setError(e?.message ?? 'Camera error')}
-      />
+      {isFocused ? (
+        <Camera
+          style={StyleSheet.absoluteFill}
+          cameraType="back"
+          scanBarcode
+          onReadCode={onReadCode}
+          showFrame={false}
+          onError={e =>
+            setError(e?.nativeEvent?.errorMessage ?? 'Camera error')
+          }
+        />
+      ) : null}
 
       <SafeAreaView style={styles.overlay} pointerEvents="box-none">
         <View style={styles.frame} />
