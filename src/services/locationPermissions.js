@@ -1,5 +1,18 @@
 import { Platform, Alert, Linking, PermissionsAndroid } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
+
+// Guarded require: the library builds a NativeEventEmitter at module load, which
+// throws if the native module is missing (e.g. iOS pods not rebuilt into the
+// binary). Importing it behind a try means a missing module degrades gracefully
+// instead of crashing every screen that touches location.
+let Geolocation = null;
+try {
+  Geolocation = require('react-native-geolocation-service').default;
+} catch (e) {
+  console.warn(
+    '[locationPermissions] geolocation native module unavailable — ' +
+      String(e?.message ?? e),
+  );
+}
 
 // Location tracking needs both a foreground grant and — so it keeps running while
 // the rider is switched to another app mid-delivery — a background grant. The two
@@ -83,6 +96,9 @@ const requestAndroidLocation = async () => {
 };
 
 const requestIosLocation = async () => {
+  if (!Geolocation) {
+    return { granted: false, background: false };
+  }
   // 'always' asks for the background-capable grant directly; iOS shows the
   // "When in Use" prompt first and escalates to "Always" on its own schedule.
   const status = await Geolocation.requestAuthorization('always');
@@ -113,5 +129,35 @@ export const ensureLocationPermission = async () => {
     return isAndroid ? await requestAndroidLocation() : await requestIosLocation();
   } catch {
     return { granted: false, background: false };
+  }
+};
+
+/**
+ * SILENTLY check whether "all the time" (background) location is currently
+ * granted — no OS prompt. Used by the in-transit gate to detect a revocation
+ * without pestering the rider.
+ *
+ * Android: reads ACCESS_BACKGROUND_LOCATION (or FINE on pre-Android-10, where
+ * a foreground grant already covers background). iOS: this library exposes no
+ * silent status query, so we don't block iOS here (returns true) — iOS keeps
+ * delivering background updates under the "Always" grant on its own terms.
+ *
+ * Never throws — returns a plain boolean.
+ */
+export const hasBackgroundLocationPermission = async () => {
+  if (!isAndroid) {
+    return true;
+  }
+  try {
+    if (!needsSeparateBackground) {
+      return PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+    }
+    return PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+    );
+  } catch {
+    return false;
   }
 };

@@ -1,8 +1,11 @@
 import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { navigationRef } from './navigationRef';
+import useBackgroundLocationGate from '../hooks/useBackgroundLocationGate';
+import LocationBlockScreen from '../screens/transporter/LocationBlockScreen';
 import SplashScreen from '../screens/SplashScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -31,9 +34,9 @@ const HEADER = {
   headerShadowVisible: false,
 };
 
-const RootNavigator = () => (
-  <NavigationContainer ref={navigationRef}>
-    <Stack.Navigator initialRouteName="Splash" screenOptions={HEADER}>
+// Everything that used to be the top-level Stack.Navigator, unchanged.
+const AppStack = () => (
+  <Stack.Navigator initialRouteName="Splash" screenOptions={HEADER}>
       <Stack.Screen
         name="Splash"
         component={SplashScreen}
@@ -131,8 +134,30 @@ const RootNavigator = () => (
         component={HelpSupportScreen}
         options={{ headerShown: false }}
       />
-    </Stack.Navigator>
-  </NavigationContainer>
+  </Stack.Navigator>
 );
+
+const RootNavigator = () => {
+  const { blocked, recheck } = useBackgroundLocationGate();
+
+  return (
+    <NavigationContainer
+      ref={navigationRef}
+      // Re-check background-location permission on every navigation, so a
+      // revocation is caught the moment the rider moves through the app.
+      onStateChange={recheck}>
+      <AppStack />
+
+      {/* When an order is in transit and "all the time" location is off, this
+          overlay covers the entire app until it's re-enabled. Rendered above
+          the navigator (not as a route) so no screen can be reached behind it. */}
+      {blocked ? (
+        <View style={StyleSheet.absoluteFill}>
+          <LocationBlockScreen onResolved={recheck} />
+        </View>
+      ) : null}
+    </NavigationContainer>
+  );
+};
 
 export default RootNavigator;

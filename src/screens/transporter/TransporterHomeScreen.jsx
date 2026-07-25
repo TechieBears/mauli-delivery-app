@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,14 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   useTransporterDashboardVendors,
   useTransporterOrders,
   useTransporterProfile,
 } from '../../hooks/useTransporterQueries';
 import { colors } from '../../theme/colors';
+import LocationTracking from '../../services/LocationTrackingService';
 import OrderRow from './OrderRow';
 import VendorCard from './VendorCard';
 import { STATUS_ASSIGNED, STATUS_ACCEPTED } from './orderStatus';
@@ -37,6 +39,22 @@ const TransporterHomeScreen = ({ navigation }) => {
   const { data: acceptedRes, refetch: refetchAccepted } =
     useTransporterOrders(STATUS_ACCEPTED);
   const accepted = Array.isArray(acceptedRes?.data) ? acceptedRes.data : [];
+
+  // While the Home screen is focused and the rider has a delivery in transit,
+  // make sure location tracking is running for that vehicle. start() is
+  // idempotent and, once running, its foreground interval pushes the location
+  // repeatedly (every 10s) the whole time this screen is visible. If there are
+  // no in-transit orders we do nothing — idle riders are never tracked. This
+  // also re-arms tracking after an app restart, where start() would otherwise
+  // never have been called.
+  const inTransitVehicle = accepted[0]?.deliveryBoy?.vehicleNo ?? null;
+  useFocusEffect(
+    useCallback(() => {
+      if (accepted.length > 0 && inTransitVehicle) {
+        LocationTracking.start(inTransitVehicle);
+      }
+    }, [accepted.length, inTransitVehicle]),
+  );
 
   const firstName = (profileRes?.data?.userId?.name ?? '').split(' ')[0];
   const greeting = greetingForHour(new Date().getHours());
