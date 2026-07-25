@@ -1983,6 +1983,8 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
+  - react-native-geolocation-service (5.3.1):
+    - React
   - react-native-image-picker (8.2.1):
     - boost
     - DoubleConversion
@@ -2767,6 +2769,11 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNNotifee (9.1.8):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 9.1.8)
+  - RNNotifee/NotifeeCore (9.1.8):
+    - React-Core
   - RNReanimated (4.4.1):
     - boost
     - DoubleConversion
@@ -3174,6 +3181,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-geolocation-service (from `../node_modules/react-native-geolocation-service`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -3213,6 +3221,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeCameraKit (from `../node_modules/react-native-camera-kit`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSnackbar (from `../node_modules/react-native-snackbar`)
@@ -3321,6 +3330,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-geolocation-service:
+    :path: "../node_modules/react-native-geolocation-service"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-netinfo:
@@ -3399,6 +3410,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-camera-kit"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -3462,6 +3475,7 @@ SPEC CHECKSUMS:
   React-logger: 993e4b9793768764e0fdd379ad1d6582f7905463
   React-Mapbuffer: 3a5f700ed673820ab4b1b35ba0cf8476400bc4c5
   React-microtasksnativemodule: 094677e625f12276a8f871844a5ee6a945a90221
+  react-native-geolocation-service: 32b2c2a3b91e70ce2a8d0c684801aaeb0a07e0ec
   react-native-image-picker: 0314366753615115fa55c3cc937ac44cb7e75702
   react-native-netinfo: a0be8c77f8420a60ddf07eb87be1a36f02a1bd65
   react-native-safe-area-context: ebd2c2ece5e6e650a6963184039ec8cfd8960d86
@@ -3501,6 +3515,7 @@ SPEC CHECKSUMS:
   ReactCommon: 5901ef412ae35cc727b9584d4f7e3e1f7f17c251
   ReactNativeCameraKit: 30a46ea51b791a914472a095a47384fc3519f14d
   RNGestureHandler: 396c56dae97876e8579445870281f223b42b34a8
+  RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReanimated: deecd12d00a9f71d290ca09d820899f4026a97d9
   RNScreens: 9269ab4971b2bd24917be84295d2c2ae7d06e9be
   RNSnackbar: 1159c621a39fffe0cff3e4f86bf290aadbeb514c

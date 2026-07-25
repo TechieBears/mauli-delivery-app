@@ -36,7 +36,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Mauli Mart needs camera access to scan pickup QR codes and upload KYC documents and profile photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Mauli Mart shares your vehicle's location with the customer while a delivery is in progress.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Mauli Mart shares your vehicle's location with the customer while a delivery is in progress, even when the app is in the background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Mauli Mart shares your vehicle's location with the customer while a delivery is in progress, even when the app is in the background.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Mauli Mart needs permission to save photos to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -50,6 +54,10 @@
 		<string>Inter-Italic.ttf</string>
 		<string>PlusJakartaSans-ExtraBold.ttf</string>
 		<string>Inter-SemiBold.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

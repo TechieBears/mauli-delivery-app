@@ -66,6 +66,12 @@ api.interceptors.request.use(
 let refreshPromise = null;
 
 const forceLogout = () => {
+  // Stop any active location watcher so a logged-out device stops streaming.
+  // Required lazily to avoid an import cycle (LocationTrackingService →
+  // transporterService → api).
+  try {
+    require('./LocationTrackingService').default.stop();
+  } catch (_) {}
   useAppStore.getState().logout();
   toast.info('Session expired', 'Please verify your number again to continue.');
   resetToLogin();

@@ -56,6 +56,11 @@ const useAppStore = create(
       },
 
       logout: () => {
+        // Stop the delivery location watcher on any logout path. Required lazily
+        // to keep the store free of a dependency on the services layer.
+        try {
+          require('../services/LocationTrackingService').default.stop();
+        } catch (_) {}
         storage.remove(STORAGE_KEYS.AUTH_TOKEN);
         storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
         set({

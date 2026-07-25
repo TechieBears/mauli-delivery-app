@@ -17,9 +17,11 @@ import {
   useSendDeliveryOtp,
   useVerifyDeliveryOtp,
 } from '../../hooks/useTransporterQueries';
-import { customerName, customerPhone } from './orderStatus';
+import { customerName, customerPhone, STATUS_ACCEPTED } from './orderStatus';
 import { colors } from '../../theme/colors';
 import toast from '../../utils/toast';
+import { fetchTransporterOrders } from '../../services/transporterService';
+import LocationTracking from '../../services/LocationTrackingService';
 
 const OTP_LENGTH = 6;
 
@@ -275,6 +277,28 @@ const DeliveryValidationModal = ({ visible, order, onClose, onDelivered }) => {
       },
     );
 
+  // After a delivery, tracking must stop only once the vehicle has no other
+  // 'intransit' order left — a single vehicle carries a whole pickup batch.
+  const stopTrackingIfLastDelivery = async () => {
+    // Only relevant if we're tracking; and only this vehicle's orders matter.
+    if (!LocationTracking.isTracking()) return;
+    const vehicleNo =
+      order?.deliveryBoy?.vehicleNo ?? LocationTracking.getVehicleNo();
+    try {
+      const res = await fetchTransporterOrders(STATUS_ACCEPTED);
+      const stillInTransit = (Array.isArray(res?.data) ? res.data : []).filter(
+        o => (o?.deliveryBoy?.vehicleNo ?? vehicleNo) === vehicleNo,
+      );
+      if (stillInTransit.length === 0) {
+        LocationTracking.stop();
+      }
+    } catch {
+      // If we can't confirm, err toward stopping — the backend rejects stray
+      // writes anyway, and the watcher restarts on the next pickup.
+      LocationTracking.stop();
+    }
+  };
+
   const submitOtp = () =>
     verify(
       {
@@ -285,6 +309,7 @@ const DeliveryValidationModal = ({ visible, order, onClose, onDelivered }) => {
       },
       {
         onSuccess: () => {
+          stopTrackingIfLastDelivery();
           toast.success('Delivered', `Handed over to ${receiver.name}.`);
           onDelivered?.();
         },

@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { CheckSquare, Square, X, Warning } from 'phosphor-react-native';
 import SwipeToConfirm from '../../components/SwipeToConfirm';
 import { orderLabel, customerName } from './orderStatus';
@@ -90,7 +91,12 @@ const PickupConfirmModal = ({ visible, scan, submitting, onClose, onConfirm }) =
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onClose}>
-      <SafeAreaView style={styles.sheet} edges={['top', 'bottom']}>
+      {/* RN <Modal> renders in a separate native window that sits OUTSIDE the
+          app-root GestureHandlerRootView, so gestures inside it (the swipe-to-
+          accept knob) get no touch events on Android. Wrapping the modal's own
+          content in a GestureHandlerRootView restores them. */}
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaView style={styles.sheet} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.title}>Confirm pickup</Text>
@@ -197,12 +203,14 @@ const PickupConfirmModal = ({ visible, scan, submitting, onClose, onConfirm }) =
             onConfirm={onConfirm}
           />
         </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   sheet: { flex: 1, backgroundColor: colors.surface },
   header: {
     flexDirection: 'row',

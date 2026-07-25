@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   useScanPickupQr,
   useConfirmPickup,
   useTransporterProfile,
 } from '../../hooks/useTransporterQueries';
 import toast from '../../utils/toast';
+import LocationTracking from '../../services/LocationTrackingService';
 
 /**
  * The scan → preview → confirm pickup flow, shared by every screen that can
@@ -21,6 +22,12 @@ import toast from '../../utils/toast';
 const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
   const [scan, setScan] = useState(null);
   const [vehicleNo, setVehicleNo] = useState(null);
+
+  // Rationale is shown once before the OS "Allow all the time" prompt, the first
+  // time the rider starts a pickup this session. After that we go straight to the
+  // native check (which no-ops when already granted).
+  const [locationRationaleVisible, setLocationRationaleVisible] = useState(false);
+  const rationaleShown = useRef(false);
 
   const { data: profileRes } = useTransporterProfile();
   const vehicles = (profileRes?.data?.vehicles ?? [])
@@ -50,16 +57,40 @@ const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
     [scanQr],
   );
 
+  const launchScanner = useCallback(() => {
+    navigation?.navigate('PickupScanner', {
+      vendorName,
+      onScanned: handleScanned,
+    });
+  }, [navigation, vendorName, handleScanned]);
+
   const openScanner = useCallback(() => {
     if (needsVehicleChoice) {
       toast.warning('Pick a vehicle', 'Choose which vehicle is making this pickup.');
       return;
     }
-    navigation?.navigate('PickupScanner', {
-      vendorName,
-      onScanned: handleScanned,
-    });
-  }, [needsVehicleChoice, navigation, vendorName, handleScanned]);
+    // First pickup of the session: explain why we need location before the OS
+    // prompt fires. Afterwards, and on every later pickup, skip straight to the
+    // scanner — the native permission check runs later when tracking starts.
+    if (!rationaleShown.current) {
+      rationaleShown.current = true;
+      setLocationRationaleVisible(true);
+      return;
+    }
+    launchScanner();
+  }, [needsVehicleChoice, launchScanner]);
+
+  // Called by LocationPermissionModal once the rider responds. Either way we
+  // continue to the scanner — a declined grant must not block the pickup; it only
+  // means location won't be shared (or only while foregrounded).
+  const onLocationRationaleResult = useCallback(() => {
+    setLocationRationaleVisible(false);
+    launchScanner();
+  }, [launchScanner]);
+
+  const closeLocationRationale = useCallback(() => {
+    setLocationRationaleVisible(false);
+  }, []);
 
   const confirmPickup = useCallback(() => {
     confirm(
@@ -68,6 +99,12 @@ const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
         onSuccess: res => {
           const assigned = res?.data?.assigned?.length ?? 0;
           setScan(null);
+          // The vehicle now has 'intransit' orders — begin (or refresh) location
+          // tracking for it. start() is idempotent per vehicle, so a second batch
+          // pickup on the same vehicle just keeps the existing watcher running.
+          if (effectiveVehicle && assigned > 0) {
+            LocationTracking.start(effectiveVehicle);
+          }
           toast.success(
             'Pickup confirmed',
             `${assigned} ${assigned === 1 ? 'order is' : 'orders are'} now in transit.`,
@@ -93,6 +130,10 @@ const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
     vehicles,
     effectiveVehicle,
     setVehicleNo,
+    // Wire these into a <LocationPermissionModal> in the screen using this flow.
+    locationRationaleVisible,
+    onLocationRationaleResult,
+    closeLocationRationale,
   };
 };
 

@@ -1,6 +1,18 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Location — shared with the customer while a delivery is in progress. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Keeps location flowing when the app is backgrounded mid-delivery (Android 10+). -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Foreground service so tracking survives the app being minimised. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Typed foreground-service permission required from Android 14 / targetSdk 34+. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -39,5 +51,13 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+
+      <!-- Notifee's foreground service backs the "Delivery in progress" notification.
+           targetSdk 34+ requires the service to declare a foregroundServiceType, so we
+           override Notifee's default with "location". -->
+      <service
+        android:name="app.notifee.core.ForegroundService"
+        android:foregroundServiceType="location"
+        tools:replace="android:foregroundServiceType" />
     </application>
 </manifest>

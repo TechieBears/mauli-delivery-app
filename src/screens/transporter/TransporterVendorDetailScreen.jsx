@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Phone, MapPin, Package, QrCode, Truck } from 'phosphor-react-native';
 import { useTransporterDashboardVendors } from '../../hooks/useTransporterQueries';
 import PickupConfirmModal from './PickupConfirmModal';
+import LocationPermissionModal from '../../components/LocationPermissionModal';
 import usePickupFlow from './usePickupFlow';
 import { formatAddress, STATUS_ASSIGNED } from './orderStatus';
 import { colors } from '../../theme/colors';
@@ -38,6 +39,9 @@ const TransporterVendorDetailScreen = ({ navigation, route }) => {
     vehicles,
     effectiveVehicle,
     setVehicleNo,
+    locationRationaleVisible,
+    onLocationRationaleResult,
+    closeLocationRationale,
   } = usePickupFlow({
     navigation,
     vendorName: vendor.vendorName,
@@ -122,6 +126,12 @@ const TransporterVendorDetailScreen = ({ navigation, route }) => {
         submitting={confirming}
         onClose={closeScan}
         onConfirm={confirmPickup}
+      />
+
+      <LocationPermissionModal
+        visible={locationRationaleVisible}
+        onResult={onLocationRationaleResult}
+        onClose={closeLocationRationale}
       />
     </SafeAreaView>
   );

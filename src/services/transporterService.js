@@ -159,6 +159,19 @@ export const verifyDeliveryOtp = ({ id, otp, receiverName, receiverPhone }) =>
     receiverPhone,
   });
 
+// ─── Live location ──────────────────────────────────────────────────────────
+
+// POST /transporter/location — pushes the vehicle's current position. The backend
+// keys the last-known location by the vehicle and fans it out to that vehicle's
+// active orders, so the client only sends the vehicle + coordinates.
+//
+// Called on every native watcher callback (~every 50 m moved or ~10 s). Fire it
+// and forget: LocationTrackingService drops failures rather than queueing, so a
+// dropped write is simply corrected by the next callback. The backend rejects
+// writes for a vehicle with no active order (409); that rejection is ignored here.
+export const postVehicleLocation = ({ lat, lng, vehicleNo }) =>
+  api.post('/transporter/location', { lat, lng, vehicleNo });
+
 // PUT /user/profile — the shared self endpoint (any authenticated role).
 // Transporters can only self-update name and email here; `phone` is the OTP
 // identity and has no self-service route, so it stays read-only in the UI.
