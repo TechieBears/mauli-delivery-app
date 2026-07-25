@@ -28,6 +28,7 @@ import {
   formatOrderDate,
   slotLabel,
 } from '../../utils/orderDisplay';
+import logger from '../../utils/logger';
 
 const fmt = n => '₹' + (n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
 
@@ -126,7 +127,7 @@ const CustomerOrderDetailScreen = ({ navigation, route }) => {
   const { data: orderRes, isLoading, isError, refetch } = useOrder(orderId);
 
   // Detailed log so the detail response shape can be inspected.
-  console.log('[OrderDetail] GET /customer/orders/:id response:', JSON.stringify(orderRes, null, 2));
+  logger.log('[OrderDetail] GET /customer/orders/:id response:', JSON.stringify(orderRes, null, 2));
 
   const detail = orderRes?.data ?? {};
   const order = detail.order ?? {};

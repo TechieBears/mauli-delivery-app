@@ -24,6 +24,7 @@ import useAppStore from '../../store/useAppStore';
 import { useVendorProfile } from '../../hooks/useVendorQueries';
 import { resetToRoleSelection } from '../../navigation/navigationRef';
 import { colors } from '../../theme/colors';
+import logger from '../../utils/logger';
 
 const AVATAR_URI = 'https://api.dicebear.com/9.x/avataaars/png?seed=Rajesh&backgroundColor=b6e3f4';
 
@@ -87,10 +88,10 @@ const VendorProfileScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (vendorProfileRes) {
-      console.log('[VendorProfileScreen] vendor profile:', JSON.stringify(vendorProfileRes, null, 2));
+      logger.log('[VendorProfileScreen] vendor profile:', JSON.stringify(vendorProfileRes, null, 2));
     }
     if (vendorProfileError) {
-      console.log('[VendorProfileScreen] vendor profile error:', {
+      logger.log('[VendorProfileScreen] vendor profile error:', {
         status: vendorProfileError?.status,
         message: vendorProfileError?.message,
         data: vendorProfileError?.data,

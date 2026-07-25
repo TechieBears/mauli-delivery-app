@@ -1,6 +1,7 @@
 import { Platform, AppState } from 'react-native';
 import { ensureLocationPermission } from './locationPermissions';
 import { postVehicleLocation } from './transporterService';
+import logger from '../utils/logger';
 
 // These two wrap native modules. If a native module is missing (e.g. the iOS
 // pods weren't rebuilt into the binary), the libraries throw at construction
@@ -17,7 +18,7 @@ try {
   notifee = notifeeModule.default;
   AndroidImportance = notifeeModule.AndroidImportance ?? AndroidImportance;
 } catch (e) {
-  console.warn(
+  logger.warn(
     '[LocationTracking] native module unavailable — location tracking disabled. ' +
       'Rebuild the app (iOS: pod install + rebuild in Xcode). ' +
       String(e?.message ?? e),
@@ -121,20 +122,20 @@ const startForegroundNotification = async () => {
 // Logs each attempt and its outcome so you can confirm in the console (Metro /
 // `adb logcat -s ReactNativeJS`) that location is reaching the server.
 const pushLocation = (vehicleNo, lat, lng) => {
-  console.log(
+  logger.log(
     `[LocationTracking] → POST /transporter/location`,
     JSON.stringify({ vehicleNo, lat, lng }),
   );
   postVehicleLocation({ lat, lng, vehicleNo })
     .then(res => {
-      console.log(
+      logger.log(
         `[LocationTracking] ✓ location saved`,
         JSON.stringify(res?.data ?? res ?? {}),
       );
     })
     .catch(err => {
       // Still dropped (no retry) — logged only so failures are visible.
-      console.log(
+      logger.log(
         `[LocationTracking] ✗ location NOT saved (status ${err?.status ?? 'n/a'}): ${err?.message ?? err}`,
       );
     });
@@ -147,13 +148,13 @@ const captureAndPush = () => {
   Geolocation.getCurrentPosition(
     position => {
       const { latitude, longitude, accuracy } = position.coords;
-      console.log(
+      logger.log(
         `[LocationTracking] fix: ${latitude}, ${longitude} (±${accuracy}m)`,
       );
       pushLocation(vehicleNo, latitude, longitude);
     },
     error => {
-      console.warn('[LocationTracking] position error', error?.code, error?.message);
+      logger.warn('[LocationTracking] position error', error?.code, error?.message);
     },
     POSITION_OPTIONS,
   );
@@ -172,14 +173,14 @@ const runInterval = ms => {
 // up front) and the interval is re-created after iOS resumes the JS thread.
 const applyCadence = () => {
   if (!running) return;
-  console.log('[LocationTracking] cadence → every 14min');
+  logger.log('[LocationTracking] cadence → every 14min');
   runInterval(UPDATE_MS);
 };
 
 const start = async vehicleNo => {
   if (!vehicleNo) return;
   if (!Geolocation) {
-    console.warn('[LocationTracking] cannot start — native module unavailable');
+    logger.warn('[LocationTracking] cannot start — native module unavailable');
     return;
   }
 
@@ -192,14 +193,14 @@ const start = async vehicleNo => {
 
   const { granted, background } = await ensureLocationPermission();
   if (!granted) {
-    console.log(
+    logger.log(
       `[LocationTracking] permission denied — not tracking ${vehicleNo}`,
     );
     // The caller shows the rationale/OS prompt; a denied grant shouldn't block
     // the pickup itself, so just bail quietly.
     return;
   }
-  console.log(
+  logger.log(
     `[LocationTracking] starting for ${vehicleNo} (background=${background})`,
   );
 
@@ -220,11 +221,11 @@ const start = async vehicleNo => {
       position => {
         if (AppState.currentState === 'active') return; // foreground uses the interval
         const { latitude, longitude } = position.coords;
-        console.log('[LocationTracking] iOS bg fix');
+        logger.log('[LocationTracking] iOS bg fix');
         pushLocation(currentVehicleNo, latitude, longitude);
       },
       error =>
-        console.warn('[LocationTracking] iOS bg watch error', error?.code, error?.message),
+        logger.warn('[LocationTracking] iOS bg watch error', error?.code, error?.message),
       IOS_BG_WATCH_OPTIONS,
     );
   }
@@ -237,7 +238,7 @@ const start = async vehicleNo => {
 
 const stop = async () => {
   if (running) {
-    console.log(`[LocationTracking] stopping (was tracking ${currentVehicleNo})`);
+    logger.log(`[LocationTracking] stopping (was tracking ${currentVehicleNo})`);
   }
 
   if (pushTimer) {

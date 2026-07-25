@@ -19,6 +19,7 @@ import {
   formatOrderDate,
   slotLabel,
 } from '../../utils/orderDisplay';
+import logger from '../../utils/logger';
 
 // Filter label → the API status values it should match.
 const FILTERS = [
@@ -84,7 +85,7 @@ const CustomerOrdersScreen = ({ navigation }) => {
   const { data: ordersRes, isLoading, isError, refetch } = useOrders();
 
   // Detailed log so the list response shape can be inspected.
-  console.log('[Orders] GET /customer/orders response:', JSON.stringify(ordersRes, null, 2));
+  logger.log('[Orders] GET /customer/orders response:', JSON.stringify(ordersRes, null, 2));
 
   const orders = Array.isArray(ordersRes?.data) ? ordersRes.data : [];
   const active = FILTERS.find(f => f.label === activeFilter) ?? FILTERS[0];

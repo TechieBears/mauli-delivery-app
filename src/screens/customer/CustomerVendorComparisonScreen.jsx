@@ -18,6 +18,7 @@ import {
   useAddCartItems,
 } from '../../hooks/useCustomerQueries';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 const fmt = n => '₹' + (n || 0).toLocaleString('en-IN');
 
@@ -170,15 +171,15 @@ const CustomerVendorComparisonScreen = ({ navigation }) => {
           quantity: i.quantity,
         })),
       };
-      console.log('[VendorComparison] POST /customer/cart/items payload:', JSON.stringify(payload, null, 2));
+      logger.log('[VendorComparison] POST /customer/cart/items payload:', JSON.stringify(payload, null, 2));
       const res = await addMutation.mutateAsync(payload);
-      console.log('[VendorComparison] POST /customer/cart/items response:', JSON.stringify(res, null, 2));
+      logger.log('[VendorComparison] POST /customer/cart/items response:', JSON.stringify(res, null, 2));
 
       toast.success('Vendor switched', `Now ordering from ${vendor.vendorName || 'the selected vendor'}.`);
       // Back to the order summary so the customer sees the updated cart/pricing.
       navigation.navigate('OrderSummary');
     } catch (err) {
-      console.log('[VendorComparison] switch-vendor error:', err?.data ?? err);
+      logger.log('[VendorComparison] switch-vendor error:', err?.data ?? err);
       toast.error('Failed', err?.data?.message ?? 'Could not switch vendor.');
     } finally {
       setSwitchingId(null);

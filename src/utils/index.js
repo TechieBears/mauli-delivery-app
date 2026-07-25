@@ -22,3 +22,5 @@ export {
   getUploadedFileLabel,
   formatFileSize,
 } from './imagePicker';
+
+export { default as logger, LOGS_ENABLED } from './logger';

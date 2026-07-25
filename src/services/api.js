@@ -5,6 +5,7 @@ import { STORAGE_KEYS } from '../constants';
 import useAppStore from '../store/useAppStore';
 import { resetToLogin } from '../navigation/navigationRef';
 import toast from '../utils/toast';
+import logger from '../utils/logger';
 
 const api = axios.create({
   baseURL: CONFIG.API_BASE_URL,
@@ -43,7 +44,7 @@ api.interceptors.request.use(
     }
     // Log the full request (method, URL, payload) — for sharing with backend.
     const fullUrl = `${config.baseURL ?? ''}${config.url ?? ''}`;
-    console.log(
+    logger.log(
       `[api] → ${config.method?.toUpperCase()} ${fullUrl}`,
       JSON.stringify(
         {
@@ -104,7 +105,7 @@ const refreshAccessToken = async () => {
 api.interceptors.response.use(
   response => {
     // Log the response for the matching request — for sharing with backend.
-    console.log(
+    logger.log(
       `[api] ← ${response.config?.method?.toUpperCase()} ${response.config?.url} (${response.status})`,
       JSON.stringify(response.data, null, 2),
     );
@@ -112,7 +113,7 @@ api.interceptors.response.use(
   },
   async error => {
     // Log the failed response (status + backend body) — for sharing with backend.
-    console.log(
+    logger.log(
       `[api] ✗ ${error?.config?.method?.toUpperCase()} ${error?.config?.url} (${error?.response?.status ?? 'no response'})`,
       JSON.stringify(error?.response?.data ?? error?.message, null, 2),
     );
@@ -130,7 +131,7 @@ api.interceptors.response.use(
     if (status === 401 && originalRequest && !originalRequest._retried && !isRefreshCall) {
       originalRequest._retried = true;
 
-      console.log('[api] 401 on', originalRequest?.method?.toUpperCase(), originalRequest?.url, {
+      logger.log('[api] 401 on', originalRequest?.method?.toUpperCase(), originalRequest?.url, {
         backendMessage: error?.response?.data?.message,
       });
 

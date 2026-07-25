@@ -18,6 +18,7 @@ import { fetchVendorProfile } from '../services/vendorService';
 import { fetchCustomerProfile } from '../services/customerService';
 import { fetchTransporterProfile } from '../services/transporterService';
 import { getResumeStep, isOnboardingIncomplete } from '../utils/onboardingProgress';
+import logger from '../utils/logger';
 
 const OTP_LENGTH = 6;
 
@@ -92,7 +93,7 @@ const OtpScreen = ({ navigation, route }) => {
     try {
       const res = await verifyOtp({ phone, otp: code });
 
-      console.log('[Otp] verify-otp response:', JSON.stringify(res, null, 2));
+      logger.log('[Otp] verify-otp response:', JSON.stringify(res, null, 2));
 
       const { accessToken, refreshToken, user, profile } = res.data;
 
@@ -118,7 +119,7 @@ const OtpScreen = ({ navigation, route }) => {
           transporterProfile = profileRes?.data;
         } catch (_) { /* logged in api.js */ }
 
-        console.log('[Otp] transporter profile:', JSON.stringify(transporterProfile, null, 2));
+        logger.log('[Otp] transporter profile:', JSON.stringify(transporterProfile, null, 2));
 
         // verify-otp returns kycStatus but not email, so the KYC form is gated
         // on status, not on a missing email:
@@ -132,7 +133,7 @@ const OtpScreen = ({ navigation, route }) => {
         // since the token was issued is picked up here.
         const transporterKyc = transporterProfile?.kycStatus ?? kycStatus;
 
-        console.log('[Otp] transporter routing decision', {
+        logger.log('[Otp] transporter routing decision', {
           kycStatusFromOtp: kycStatus,
           kycStatusFromProfile: transporterProfile?.kycStatus,
           resolved: transporterKyc,
@@ -158,7 +159,7 @@ const OtpScreen = ({ navigation, route }) => {
           vendorProfile = profileRes?.data;
         } catch (_) { /* logged in vendorService */ }
 
-        console.log('[Otp] routing decision', {
+        logger.log('[Otp] routing decision', {
           kycStatus,
           isPricingComplete: profile?.isPricingComplete,
           incomplete: isOnboardingIncomplete(kycStatus),
@@ -188,7 +189,7 @@ const OtpScreen = ({ navigation, route }) => {
           customerProfile = profileRes?.data;
         } catch (_) { /* logged in customerService */ }
 
-        console.log('[Otp] customer routing decision', {
+        logger.log('[Otp] customer routing decision', {
           kycStatus,
           agreementAccepted: customerProfile?.agreementAccepted,
           incomplete: isOnboardingIncomplete(kycStatus),
@@ -212,7 +213,7 @@ const OtpScreen = ({ navigation, route }) => {
       }
     } catch (err) {
       // 403 = account exists but is under review — send to pending screen
-    console.log("🚀 ~ OtpScreen.jsx:78 ~ handleVerify ~ err:", err)
+    logger.log("🚀 ~ OtpScreen.jsx:78 ~ handleVerify ~ err:", err)
 
       if (err?.status === 403) {
         navigation.reset({ index: 0, routes: [{ name: 'VerificationPending' }] });

@@ -1,9 +1,12 @@
 import { API_BASE_URL, APP_NAME, APP_ENV } from '@env';
+import { LOGS_ENABLED } from '../utils/logger';
 
 export const CONFIG = {
   API_BASE_URL,
   APP_NAME,
   APP_ENV,
+  // Resolved log toggle (ENABLE_LOGS in .env, falling back to __DEV__).
+  ENABLE_LOGS: LOGS_ENABLED,
 };
 
 export const QUERY_KEYS = {

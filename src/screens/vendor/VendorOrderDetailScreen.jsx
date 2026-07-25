@@ -27,6 +27,7 @@ import AppHeader from '../../components/AppHeader';
 import { useVendorOrder, useUpdateVendorOrderStatus, useLookupTransporter } from '../../hooks/useVendorQueries';
 import toast from '../../utils/toast';
 import DeliveryOtpModal from './DeliveryOtpModal';
+import logger from '../../utils/logger';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -520,8 +521,8 @@ const VendorOrderDetailScreen = ({ navigation, route }) => {
   // sections fall back to empty so the screen renders without crashing.
   const { data, isLoading, error: apiOrderError } = useVendorOrder(orderId);
   React.useEffect(() => {
-    if (data) console.log(`[VendorOrderDetailScreen] /vendor/orders/${orderId} data:`, JSON.stringify(data, null, 2));
-    if (apiOrderError) console.log(`[VendorOrderDetailScreen] /vendor/orders/${orderId} error:`, apiOrderError?.message, apiOrderError?.status);
+    if (data) logger.log(`[VendorOrderDetailScreen] /vendor/orders/${orderId} data:`, JSON.stringify(data, null, 2));
+    if (apiOrderError) logger.log(`[VendorOrderDetailScreen] /vendor/orders/${orderId} error:`, apiOrderError?.message, apiOrderError?.status);
   }, [data, apiOrderError, orderId]);
 
   const order = useMemo(() => mapDetailOrder(data?.data), [data]);

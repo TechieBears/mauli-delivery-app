@@ -36,6 +36,7 @@ import {
   CustomerKycStep,
   CustomerReviewStep,
 } from './customerSteps';
+import logger from '../../utils/logger';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
@@ -226,14 +227,14 @@ const OnboardingScreen = ({ navigation, route }) => {
     if (step === 0 && !otpVerified) {
       setOtpError('');
       setOtp(Array(OTP_LENGTH).fill(''));
-      console.log('[Onboarding] sendOtp →', { phone: data.phone, name: data.fullName, role });
+      logger.log('[Onboarding] sendOtp →', { phone: data.phone, name: data.fullName, role });
       try {
         const res = await sendOtp({ phone: data.phone, name: data.fullName, role, countryCode: data.countryCode });
-        console.log('[Onboarding] sendOtp response:', JSON.stringify(res, null, 2));
+        logger.log('[Onboarding] sendOtp response:', JSON.stringify(res, null, 2));
         setDevOtp(res?.data?.otp ?? null);
         setOtpStage(true);
       } catch (err) {
-        console.log('[Onboarding] sendOtp error:', {
+        logger.log('[Onboarding] sendOtp error:', {
           status: err?.status,
           message: err?.message,
           data: err?.data,
@@ -259,18 +260,18 @@ const OnboardingScreen = ({ navigation, route }) => {
     // server-side status is changed by an admin. We still set 'onReview' so the
     // local store + VerificationPending screen reflect the submitted state.
     const submittedKycStatus = 'onReview';
-    console.log('[Onboarding] saveKycSteps (submit) →', JSON.stringify(data, null, 2));
+    logger.log('[Onboarding] saveKycSteps (submit) →', JSON.stringify(data, null, 2));
     try {
       // Persist any name/email edits (User record), then save the form data.
       // Vendor: kycStatus 'onReview' (backend accepts it). Customer: sent for
       // parity but ignored by the backend allowlist.
       await updateUserProfile({ name: data.fullName?.trim(), email: data.email?.trim() });
       const reviewRes = await saveKycSteps({ data, kycStatus: submittedKycStatus });
-      console.log('[Onboarding] saveKycSteps response:', JSON.stringify(reviewRes, null, 2));
+      logger.log('[Onboarding] saveKycSteps response:', JSON.stringify(reviewRes, null, 2));
       setProfile({ ...data, phone });
       setKycStatus(submittedKycStatus);
     } catch (err) {
-      console.log('[Onboarding] saveKycSteps error:', {
+      logger.log('[Onboarding] saveKycSteps error:', {
         status: err?.status,
         message: err?.message,
         data: err?.data,
@@ -315,10 +316,10 @@ const OnboardingScreen = ({ navigation, route }) => {
       setOtpError(`Please enter all ${OTP_LENGTH} digits`);
       return;
     }
-    console.log('[Onboarding] verifyOtp →', { phone: data.phone, otp: code });
+    logger.log('[Onboarding] verifyOtp →', { phone: data.phone, otp: code });
     try {
       const res = await verifyOtp({ phone: data.phone, otp: code });
-      console.log('[Onboarding] verifyOtp response:', JSON.stringify(res, null, 2));
+      logger.log('[Onboarding] verifyOtp response:', JSON.stringify(res, null, 2));
       const { accessToken, refreshToken, user, profile } = res.data;
       login({
         accessToken,
@@ -333,7 +334,7 @@ const OnboardingScreen = ({ navigation, route }) => {
       // /auth/send-otp + /auth/verify-otp (name/phone/role sent on send-otp).
       setOtpVerified(true);
     } catch (err) {
-      console.log('[Onboarding] verifyOtp error:', {
+      logger.log('[Onboarding] verifyOtp error:', {
         status: err?.status,
         message: err?.message,
         data: err?.data,
@@ -447,7 +448,7 @@ const OnboardingScreen = ({ navigation, route }) => {
       case 2:
         return <KycStep data={data} errors={errors} onChange={onChange} />;
       case 3:
-        console.log('[Onboarding] review document values', {
+        logger.log('[Onboarding] review document values', {
           panDoc: data.panDoc,
           addressProof: data.addressProof,
           identityProofDoc: data.identityProofDoc,

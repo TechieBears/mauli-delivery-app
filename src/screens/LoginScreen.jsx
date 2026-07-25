@@ -15,6 +15,7 @@ import { useForm, Controller } from 'react-hook-form';
 import Svg, { Path } from 'react-native-svg';
 import useAppStore from '../store/useAppStore';
 import { useSendOtp } from '../hooks/useAuthQueries';
+import logger from '../utils/logger';
 
 // Single-role app: there is no role picker to read from, so every request
 // registers/authenticates the user as a transporter.
@@ -40,7 +41,7 @@ const LoginScreen = ({ navigation }) => {
       const devOtp = res?.data?.otp ?? null;
       navigation.navigate('Otp', { phone, role, countryCode, devOtp });
     } catch (err) {
-      console.error('Error sending OTP:', err);
+      logger.error('Error sending OTP:', err);
     }
   };
 

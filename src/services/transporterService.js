@@ -1,4 +1,5 @@
 import api from './api';
+import logger from '../utils/logger';
 
 // Registration itself (name/phone/role) is handled entirely by
 // /auth/send-otp + /auth/verify-otp — no separate account-save call needed.
@@ -61,7 +62,7 @@ export const updateTransporterProfile = ({
 
   // Mirrors the equivalent curl, so what the app sends can be compared against
   // a hand-run request field for field.
-  console.log(
+  logger.log(
     '[transporterService] PATCH /transporter/profile — sending:',
     JSON.stringify(
       {

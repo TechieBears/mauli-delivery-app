@@ -16,6 +16,7 @@ import { Storefront, DotsThreeVertical } from 'phosphor-react-native';
 import AppHeader from '../../components/AppHeader';
 import { useVendorOrders, useUpdateVendorOrderStatus } from '../../hooks/useVendorQueries';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 // Backend status enum: pending | confirmed | intransit | delivered | rejected | cancelled
 // The filter capsules come from the API's `statuses` array; this is a safe
@@ -118,7 +119,7 @@ const VendorOrdersScreen = ({ navigation }) => {
   // The active filter is sent to the API, which returns only matching orders.
   const { data, isLoading, isError, error, refetch, isRefetching } = useVendorOrders(activeFilter);
   React.useEffect(() => {
-    if (error) console.log('[VendorOrdersScreen] /vendor/orders error:', error?.message, error?.status);
+    if (error) logger.log('[VendorOrdersScreen] /vendor/orders error:', error?.message, error?.status);
   }, [error]);
 
   // The list screen stays mounted while you drill into an order's detail, so

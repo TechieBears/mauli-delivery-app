@@ -23,6 +23,7 @@ import {
   useClearCart,
 } from '../../hooks/useCustomerQueries';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 // Placeholder tint behind product images that have no imageUrl.
 const IMG_BG = '#fef3c7';
@@ -267,7 +268,7 @@ const CustomerNewOrderScreen = ({ navigation, route }) => {
     setSubmitting(true);
     try {
       if (hasExistingCart) {
-        console.log('[NewOrder] DELETE /customer/cart (reset before re-add)');
+        logger.log('[NewOrder] DELETE /customer/cart (reset before re-add)');
         await clearCartMutation.mutateAsync();
       }
 
@@ -278,12 +279,12 @@ const CustomerNewOrderScreen = ({ navigation, route }) => {
           quantity: line.qty,
         })),
       };
-      console.log('[NewOrder] POST /customer/cart/items payload:', JSON.stringify(payload, null, 2));
+      logger.log('[NewOrder] POST /customer/cart/items payload:', JSON.stringify(payload, null, 2));
       const res = await addItems.mutateAsync(payload);
-      console.log('[NewOrder] POST /customer/cart/items response:', JSON.stringify(res, null, 2));
+      logger.log('[NewOrder] POST /customer/cart/items response:', JSON.stringify(res, null, 2));
       navigation.navigate('OrderSummary');
     } catch (err) {
-      console.log('[NewOrder] add-to-cart error:', err?.data ?? err);
+      logger.log('[NewOrder] add-to-cart error:', err?.data ?? err);
       toast.error('Failed', err?.data?.message ?? 'Could not add items to cart.');
     } finally {
       setSubmitting(false);

@@ -25,6 +25,7 @@ import {
   useSendCustomerAgreementOtp,
   useVerifyCustomerAgreementOtp,
 } from '../../hooks/useCustomerQueries';
+import logger from '../../utils/logger';
 
 const OTP_LENGTH = 6;
 
@@ -66,7 +67,7 @@ const CustomerAgreementScreen = ({ navigation, onAccepted }) => {
       const receivedOtp = res?.data?.otp ?? null;
       setDevOtp(receivedOtp);
       if (receivedOtp) {
-        console.log('[CustomerAgreement] dev OTP:', receivedOtp);
+        logger.log('[CustomerAgreement] dev OTP:', receivedOtp);
       }
       setOtp(Array(OTP_LENGTH).fill(''));
       setOtpError('');

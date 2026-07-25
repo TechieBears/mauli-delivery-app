@@ -20,6 +20,7 @@ import {
   useCompareCartVendors,
 } from '../../hooks/useCustomerQueries';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 const IMG_BG = '#fef3c7';
 
@@ -106,11 +107,11 @@ const CustomerOrderSummaryScreen = ({ navigation }) => {
   } = useCompareCartVendors(items.length > 0);
 
   // Detailed logs so the raw API shapes can be inspected/shared.
-  console.log('[OrderSummary] GET /customer/cart response:', JSON.stringify(cartRes, null, 2));
-  console.log('[OrderSummary] GET /customer/cart/price response:', JSON.stringify(priceRes, null, 2));
-  console.log('[OrderSummary] GET /customer/cart/compare-vendors response:', JSON.stringify(compareRes, null, 2));
+  logger.log('[OrderSummary] GET /customer/cart response:', JSON.stringify(cartRes, null, 2));
+  logger.log('[OrderSummary] GET /customer/cart/price response:', JSON.stringify(priceRes, null, 2));
+  logger.log('[OrderSummary] GET /customer/cart/compare-vendors response:', JSON.stringify(compareRes, null, 2));
   if (compareError) {
-    console.log('[OrderSummary] compare-vendors error:', compareErr?.data ?? compareErr);
+    logger.log('[OrderSummary] compare-vendors error:', compareErr?.data ?? compareErr);
   }
 
   const subtotal = price.customerTotal ?? cart.subtotal ?? 0;
@@ -127,22 +128,22 @@ const CustomerOrderSummaryScreen = ({ navigation }) => {
   const hasOtherVendors = (compare.comparisons?.length ?? 0) > 0;
 
   const handleRemove = variantId => {
-    console.log('[OrderSummary] DELETE /customer/cart/items/%s', variantId);
+    logger.log('[OrderSummary] DELETE /customer/cart/items/%s', variantId);
     removeMutation.mutate(variantId, {
-      onSuccess: res => console.log('[OrderSummary] remove response:', JSON.stringify(res, null, 2)),
+      onSuccess: res => logger.log('[OrderSummary] remove response:', JSON.stringify(res, null, 2)),
       onError: err => {
-        console.log('[OrderSummary] remove error:', err?.data ?? err);
+        logger.log('[OrderSummary] remove error:', err?.data ?? err);
         toast.error('Failed', err?.data?.message ?? 'Could not remove item.');
       },
     });
   };
 
   const handleClear = () => {
-    console.log('[OrderSummary] DELETE /customer/cart (clear)');
+    logger.log('[OrderSummary] DELETE /customer/cart (clear)');
     clearMutation.mutate(undefined, {
-      onSuccess: res => console.log('[OrderSummary] clear response:', JSON.stringify(res, null, 2)),
+      onSuccess: res => logger.log('[OrderSummary] clear response:', JSON.stringify(res, null, 2)),
       onError: err => {
-        console.log('[OrderSummary] clear error:', err?.data ?? err);
+        logger.log('[OrderSummary] clear error:', err?.data ?? err);
         toast.error('Failed', err?.data?.message ?? 'Could not clear cart.');
       },
     });

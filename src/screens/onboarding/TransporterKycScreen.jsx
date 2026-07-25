@@ -25,6 +25,7 @@ import { pickImageWithChooser, getUploadedFileLabel } from '../../utils/imagePic
 import { TRANSPORTER_STEPS } from '../../constants/onboardingSteps';
 import { HorizontalStepper } from '../../components/onboarding';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -84,7 +85,7 @@ const TransporterKycScreen = ({ navigation }) => {
   // rather than making an approved transporter re-do registration.
   useEffect(() => {
     if (profile?.kycStatus !== 'approved') return;
-    console.log('[TransporterKyc] already approved on load → TransporterApp');
+    logger.log('[TransporterKyc] already approved on load → TransporterApp');
     setKycStatus('approved');
     navigation.reset({ index: 0, routes: [{ name: 'TransporterApp' }] });
   }, [profile, navigation, setKycStatus]);
@@ -141,11 +142,11 @@ const TransporterKycScreen = ({ navigation }) => {
       // Name/email live on the User doc; licence/vehicle on the Transporter doc.
       // Two endpoints, so identity is saved first — if the KYC PATCH then fails
       // the user only re-submits the second half on retry.
-      console.log('[TransporterKyc] saving identity', { name: name.trim(), email: email.trim() });
+      logger.log('[TransporterKyc] saving identity', { name: name.trim(), email: email.trim() });
       const identityRes = await saveIdentity({ name: name.trim(), email: email.trim() });
-      console.log('[TransporterKyc] identity saved:', JSON.stringify(identityRes, null, 2));
+      logger.log('[TransporterKyc] identity saved:', JSON.stringify(identityRes, null, 2));
 
-      console.log('[TransporterKyc] saving KYC', {
+      logger.log('[TransporterKyc] saving KYC', {
         drivingLicenseNo: licenseNo.trim(),
         vehicles: [vehicleNo.trim()],
         hasFile: !!licenseFile,
@@ -155,12 +156,12 @@ const TransporterKycScreen = ({ navigation }) => {
         vehicles: [vehicleNo.trim()],
         ...(licenseFile && { drivingLicenseFile: licenseFile }),
       });
-      console.log('[TransporterKyc] KYC saved:', JSON.stringify(kycRes, null, 2));
+      logger.log('[TransporterKyc] KYC saved:', JSON.stringify(kycRes, null, 2));
 
       // Update succeeded → move on to the review step.
       setStep(STEP_REVIEW);
     } catch (err) {
-      console.log('[TransporterKyc] save failed', { status: err?.status, message: err?.message, data: err?.data });
+      logger.log('[TransporterKyc] save failed', { status: err?.status, message: err?.message, data: err?.data });
       toast.error('Could not save details', err?.message ?? 'Please try again.');
     }
   };
@@ -174,9 +175,9 @@ const TransporterKycScreen = ({ navigation }) => {
       // isTermAccepted field, and updateProfile only reads drivingLicenseNo /
       // vehicles / drivingLicenseFile. Approval stays an admin action
       // (PATCH /admin/transporters/:id), so this normally comes back 'pending'.
-      console.log('[TransporterKyc] accepting terms → PATCH', { isTermAccepted: true, kycStatus: 'approved' });
+      logger.log('[TransporterKyc] accepting terms → PATCH', { isTermAccepted: true, kycStatus: 'approved' });
       const res = await saveKyc({ isTermAccepted: true, kycStatus: 'approved' });
-      console.log('[TransporterKyc] terms PATCH response:', JSON.stringify(res, null, 2));
+      logger.log('[TransporterKyc] terms PATCH response:', JSON.stringify(res, null, 2));
 
       // Re-read the profile rather than trusting the PATCH echo: this is the
       // authoritative status, and it also picks up an approval an admin granted
@@ -184,15 +185,15 @@ const TransporterKycScreen = ({ navigation }) => {
       const freshRes = await refetchProfile();
       const fresh = freshRes?.data?.data ?? null;
       serverKyc = fresh?.kycStatus ?? res?.data?.kycStatus ?? null;
-      console.log('[TransporterKyc] profile re-fetched after submit:', JSON.stringify(fresh, null, 2));
-      console.log('[TransporterKyc] resolved kycStatus:', serverKyc);
+      logger.log('[TransporterKyc] profile re-fetched after submit:', JSON.stringify(fresh, null, 2));
+      logger.log('[TransporterKyc] resolved kycStatus:', serverKyc);
 
       // Keep the store in step with the backend so Splash and the OTP screen
       // route consistently on the next launch.
       if (serverKyc) setKycStatus(serverKyc);
     } catch (err) {
       // A failure here must not strand the user — acceptance is local anyway.
-      console.log('[TransporterKyc] terms submit failed', { status: err?.status, message: err?.message });
+      logger.log('[TransporterKyc] terms submit failed', { status: err?.status, message: err?.message });
     }
     setTermsAccepted(true);
     setShowTerms(false);
@@ -201,11 +202,11 @@ const TransporterKycScreen = ({ navigation }) => {
     // the admin. Flipping this to an unconditional Home would drop an
     // unapproved transporter into a screen whose every call still 403s.
     if (serverKyc === 'approved') {
-      console.log('[TransporterKyc] approved → TransporterApp');
+      logger.log('[TransporterKyc] approved → TransporterApp');
       navigation.reset({ index: 0, routes: [{ name: 'TransporterApp' }] });
       return;
     }
-    console.log('[TransporterKyc] not yet approved → VerificationPending', { kycStatus: serverKyc });
+    logger.log('[TransporterKyc] not yet approved → VerificationPending', { kycStatus: serverKyc });
     navigation.reset({
       index: 0,
       routes: [{ name: 'VerificationPending', params: { kycStatus: serverKyc ?? 'onReview' } }],

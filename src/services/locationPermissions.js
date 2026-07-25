@@ -1,4 +1,5 @@
 import { Platform, Alert, Linking, PermissionsAndroid } from 'react-native';
+import logger from '../utils/logger';
 
 // Guarded require: the library builds a NativeEventEmitter at module load, which
 // throws if the native module is missing (e.g. iOS pods not rebuilt into the
@@ -8,7 +9,7 @@ let Geolocation = null;
 try {
   Geolocation = require('react-native-geolocation-service').default;
 } catch (e) {
-  console.warn(
+  logger.warn(
     '[locationPermissions] geolocation native module unavailable — ' +
       String(e?.message ?? e),
   );

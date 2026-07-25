@@ -18,6 +18,7 @@ import {
   usePlaceOrder,
 } from '../../hooks/useCustomerQueries';
 import toast from '../../utils/toast';
+import logger from '../../utils/logger';
 
 const fmt = n => '₹' + (n || 0).toLocaleString('en-IN');
 
@@ -55,7 +56,7 @@ const CustomerConfirmOrderScreen = ({ navigation }) => {
   const placeOrderMutation = usePlaceOrder();
 
   // Log the raw slots response so the shape can be inspected.
-  console.log('[ConfirmOrder] GET /customer/orders/slots response:', JSON.stringify(slotsRes, null, 2));
+  logger.log('[ConfirmOrder] GET /customer/orders/slots response:', JSON.stringify(slotsRes, null, 2));
 
   // Default to the first available slot once they load.
   useEffect(() => {
@@ -90,11 +91,11 @@ const CustomerConfirmOrderScreen = ({ navigation }) => {
       deliveryDate: todayISODate(),
       deliverySlotId: selectedSlot,
     };
-    console.log('[ConfirmOrder] POST /customer/orders payload:', JSON.stringify(payload, null, 2));
+    logger.log('[ConfirmOrder] POST /customer/orders payload:', JSON.stringify(payload, null, 2));
 
     placeOrderMutation.mutate(payload, {
       onSuccess: res => {
-        console.log('[ConfirmOrder] POST /customer/orders response:', JSON.stringify(res, null, 2));
+        logger.log('[ConfirmOrder] POST /customer/orders response:', JSON.stringify(res, null, 2));
         const order = res?.data?.order ?? {};
         navigation.navigate('OrderSuccess', {
           orderId: order._id ?? null,
@@ -105,7 +106,7 @@ const CustomerConfirmOrderScreen = ({ navigation }) => {
         });
       },
       onError: err => {
-        console.log('[ConfirmOrder] place-order error:', err?.data ?? err);
+        logger.log('[ConfirmOrder] place-order error:', err?.data ?? err);
         toast.error('Failed', err?.data?.message ?? 'Could not place your order.');
       },
     });

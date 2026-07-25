@@ -1,4 +1,5 @@
 import api from './api';
+import logger from '../utils/logger';
 
 // Registration itself (name/phone/role) is handled entirely by
 // /auth/send-otp + /auth/verify-otp — no separate account-save call needed.
@@ -118,7 +119,7 @@ export const fetchVendorOrders = (status) =>
   api
     .get('/vendor/orders', { params: status ? { status } : undefined })
     .then(res => {
-      console.log('[vendorService] fetchVendorOrders response:', JSON.stringify(res, null, 2));
+      logger.log('[vendorService] fetchVendorOrders response:', JSON.stringify(res, null, 2));
       return res;
     });
 
@@ -126,7 +127,7 @@ export const fetchVendorOrders = (status) =>
 // Returns { order, items } — see mapDetailOrder in VendorOrderDetailScreen.
 export const fetchVendorOrderById = id =>
   api.get(`/vendor/orders/${id}`).then(res => {
-    console.log(`[vendorService] fetchVendorOrderById(${id}) response:`, JSON.stringify(res, null, 2));
+    logger.log(`[vendorService] fetchVendorOrderById(${id}) response:`, JSON.stringify(res, null, 2));
     return res;
   });
 

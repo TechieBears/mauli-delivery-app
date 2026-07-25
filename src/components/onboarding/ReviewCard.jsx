@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 import { toHttpsUrl } from '../../utils/imageUrl';
+import logger from '../../utils/logger';
 
 const EditIcon = () => (
   <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
@@ -32,7 +33,7 @@ const ReviewRow = ({ label, value, isImage }) => (
         style={styles.thumbnail}
         resizeMode="cover"
         onError={e =>
-          console.log('[ReviewCard] image failed to load', label, {
+          logger.log('[ReviewCard] image failed to load', label, {
             uri: toHttpsUrl(value),
             error: e?.nativeEvent?.error,
           })

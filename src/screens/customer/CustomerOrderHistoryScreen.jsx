@@ -13,6 +13,7 @@ import { colors } from '../../theme/colors';
 import AppHeader from '../../components/AppHeader';
 import { useOrders } from '../../hooks/useCustomerQueries';
 import { STATUS_META, shortOrderRef, formatOrderDate } from '../../utils/orderDisplay';
+import logger from '../../utils/logger';
 
 const formatINR = amount =>
   '₹' + (amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
@@ -52,7 +53,7 @@ const CustomerOrderHistoryScreen = ({ navigation }) => {
   const { data: ordersRes, isLoading, isError, refetch } = useOrders();
 
   // Detailed log so the list response shape can be inspected.
-  console.log('[OrderHistory] GET /customer/orders response:', JSON.stringify(ordersRes, null, 2));
+  logger.log('[OrderHistory] GET /customer/orders response:', JSON.stringify(ordersRes, null, 2));
 
   const orders = Array.isArray(ordersRes?.data) ? ordersRes.data : [];
 
