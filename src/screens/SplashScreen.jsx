@@ -151,7 +151,7 @@ const SplashScreen = ({ navigation }) => {
         <Text style={styles.appName}>Transporter</Text>
 
         <View style={styles.taglineBlock}>
-          <Text style={styles.tagSub}>Mauli Mart</Text>
+          <Text style={styles.tagSub}>Mauli G-Mart</Text>
           <Text style={styles.tagline}>Pick up. Deliver. Repeat.</Text>
         </View>
       </View>

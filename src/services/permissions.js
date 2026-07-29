@@ -44,7 +44,7 @@ const requestAndroidPermission = async (permission, featureLabel) => {
 
   const result = await PermissionsAndroid.request(permission, {
     title: `${featureLabel} Permission`,
-    message: `Mauli Mart needs ${featureLabel.toLowerCase()} access for document uploads and updates.`,
+    message: `Mauli G-Mart Transporter needs ${featureLabel.toLowerCase()} access for document uploads and updates.`,
     buttonPositive: 'Allow',
     buttonNegative: 'Deny',
   });

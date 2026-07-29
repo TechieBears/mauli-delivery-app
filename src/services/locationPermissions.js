@@ -52,7 +52,7 @@ const requestAndroidLocation = async () => {
       {
         title: 'Location Permission',
         message:
-          'Mauli Mart uses your location as your vehicle location to track the order while a delivery is in progress.',
+          'Mauli G-Mart Transporter uses your location as your vehicle location to track the order while a delivery is in progress.',
         buttonPositive: 'Allow',
         buttonNegative: 'Deny',
       },

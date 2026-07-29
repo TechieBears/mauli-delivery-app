@@ -42,7 +42,7 @@ const LogoutModal = ({ visible, onConfirm, onCancel }) => (
         </View>
         <Text style={modalStyles.title}>Are you sure?</Text>
         <Text style={modalStyles.subtitle}>
-          You will be logged out of your Mauli Transporter account.
+          You will be logged out of your Mauli G-Mart Transporter account.
         </Text>
         <TouchableOpacity style={modalStyles.signOutBtn} onPress={onConfirm} activeOpacity={0.85}>
           <Text style={modalStyles.signOutText}>Sign Out</Text>

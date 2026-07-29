@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>maulitransporter</string>
+	<string>Mauli G-Mart Transporter</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -34,17 +34,17 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Mauli Mart needs camera access to scan pickup QR codes and upload KYC documents and profile photos.</string>
+	<string>Mauli G-Mart Transporter needs camera access to scan pickup QR codes and upload KYC documents and profile photos.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Mauli Mart uses your location as your vehicle's location to track the order while a delivery is in progress, even when the app is in the background.</string>
+	<string>Mauli G-Mart Transporter uses your location as your vehicle's location to track the order while a delivery is in progress, even when the app is in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Mauli Mart uses your location as your vehicle's location to track the order while a delivery is in progress, even when the app is in the background.</string>
+	<string>Mauli G-Mart Transporter uses your location as your vehicle's location to track the order while a delivery is in progress, even when the app is in the background.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Mauli Mart uses your location as your vehicle's location to track the order while a delivery is in progress.</string>
+	<string>Mauli G-Mart Transporter uses your location as your vehicle's location to track the order while a delivery is in progress.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Mauli Mart needs permission to save photos to your library.</string>
+	<string>Mauli G-Mart Transporter needs permission to save photos to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Mauli Mart needs photo library access to upload KYC documents and profile photos.</string>
+	<string>Mauli G-Mart Transporter needs photo library access to upload KYC documents and profile photos.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

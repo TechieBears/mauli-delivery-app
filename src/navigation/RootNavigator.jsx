@@ -45,12 +45,12 @@ const AppStack = () => (
       <Stack.Screen
         name="Welcome"
         component={WelcomeScreen}
-        options={{ title: 'Mauli Transporter', headerBackVisible: false }}
+        options={{ title: 'Mauli G-Mart Transporter', headerBackVisible: false }}
       />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ title: 'Mauli Transporter', headerBackTitle: '' }}
+        options={{ title: 'Mauli G-Mart Transporter', headerBackTitle: '' }}
       />
       <Stack.Screen
         name="Otp"
@@ -79,7 +79,7 @@ const AppStack = () => (
       <Stack.Screen
         name="VerificationPending"
         component={VerificationPendingScreen}
-        options={{ title: 'Mauli Transporter', headerBackVisible: false }}
+        options={{ title: 'Mauli G-Mart Transporter', headerBackVisible: false }}
       />
       {/* Post-approval landing: Orders + Profile tabs. */}
       <Stack.Screen
