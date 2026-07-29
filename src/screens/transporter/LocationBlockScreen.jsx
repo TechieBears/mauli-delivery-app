@@ -52,8 +52,9 @@ const LocationBlockScreen = ({ onResolved }) => {
 
         <Text style={styles.title}>Location required</Text>
         <Text style={styles.body}>
-          You have a delivery in progress. To keep sharing your vehicle's
-          location with the customer, this app needs location access set to{' '}
+          You have a delivery in progress. Your location is used as your
+          vehicle's location to track this order, so this app needs location
+          access set to{' '}
           <Text style={styles.strong}>“Allow all the time.”</Text>
         </Text>
 

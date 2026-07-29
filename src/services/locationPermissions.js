@@ -32,7 +32,7 @@ const needsSeparateBackground = isAndroid && Number(Platform.Version) >= 29;
 const promptOpenSettings = () => {
   Alert.alert(
     'Location permission required',
-    'Allow location access — including "Allow all the time" — in Settings so we can share your delivery location.',
+    'Allow location access — including "Allow all the time" — in Settings so we can track the order using your vehicle location.',
     [
       { text: 'Not now', style: 'cancel' },
       { text: 'Open Settings', onPress: () => Linking.openSettings() },
@@ -52,7 +52,7 @@ const requestAndroidLocation = async () => {
       {
         title: 'Location Permission',
         message:
-          'Mauli Mart shares your vehicle location with the customer while a delivery is in progress.',
+          'Mauli Mart uses your location as your vehicle location to track the order while a delivery is in progress.',
         buttonPositive: 'Allow',
         buttonNegative: 'Deny',
       },
@@ -85,7 +85,7 @@ const requestAndroidLocation = async () => {
     {
       title: 'Allow location all the time',
       message:
-        'To keep sharing your location when the app is in the background, choose "Allow all the time".',
+        'To keep tracking the order when the app is in the background, choose "Allow all the time".',
       buttonPositive: 'Allow',
       buttonNegative: 'Not now',
     },

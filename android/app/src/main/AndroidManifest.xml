@@ -3,7 +3,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Location — shared with the customer while a delivery is in progress. -->
+    <!-- Location — used as the vehicle location to track the order while a delivery is in progress. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Keeps location flowing when the app is backgrounded mid-delivery (Android 10+). -->

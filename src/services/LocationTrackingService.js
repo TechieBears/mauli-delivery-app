@@ -103,7 +103,7 @@ const startForegroundNotification = async () => {
   notifee.registerForegroundService(() => new Promise(() => {}));
   await notifee.displayNotification({
     title: 'Delivery in progress',
-    body: 'Sharing your location with the customer.',
+    body: 'Your location is used as your vehicle location to track this order.',
     android: {
       channelId: CHANNEL_ID,
       asForegroundService: true,

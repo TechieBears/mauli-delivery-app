@@ -43,10 +43,10 @@ const LocationPermissionModal = ({ visible, onResult, onClose }) => {
             <NavigationArrow size={30} color={colors.primary} weight="fill" />
           </View>
 
-          <Text style={styles.title}>Share your delivery location</Text>
+          <Text style={styles.title}>Allow your delivery location</Text>
           <Text style={styles.body}>
-            While a delivery is in progress we share your vehicle's location with
-            the customer so they can track their order.
+            While a delivery is in progress we use your location as your
+            vehicle's location to track the order.
           </Text>
 
           <View style={styles.point}>

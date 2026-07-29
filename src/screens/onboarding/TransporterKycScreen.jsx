@@ -410,8 +410,9 @@ const TransporterKycScreen = ({ navigation }) => {
               <Text style={styles.termsText}>
                 By registering as a Mauli transporter you agree to carry out deliveries
                 assigned to you through the app, to keep your driving licence and vehicle
-                details accurate and up to date, and to share your live location while a
-                delivery is in progress so customers and vendors can track their order.
+                details accurate and up to date, and to allow your live location to be
+                used as your vehicle's location to track the order while a delivery is
+                in progress.
                 {'\n\n'}
                 You confirm that the driving licence and vehicle details you have provided
                 are genuine and belong to you, and that you hold a valid licence for the
