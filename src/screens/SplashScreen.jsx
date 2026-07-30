@@ -148,10 +148,12 @@ const SplashScreen = ({ navigation }) => {
           <Image source={MauliLogo} style={styles.logo} resizeMode="contain" />
         </View>
 
-        <Text style={styles.appName}>Transporter</Text>
+        <View style={styles.nameBlock}>
+          <Text style={styles.appName}>Mauli G-Mart</Text>
+          <Text style={styles.appNameSecondary}>Transporter</Text>
+        </View>
 
         <View style={styles.taglineBlock}>
-          <Text style={styles.tagSub}>Mauli G-Mart</Text>
           <Text style={styles.tagline}>Pick up. Deliver. Repeat.</Text>
         </View>
       </View>
@@ -215,27 +217,31 @@ const styles = StyleSheet.create({
     height: 80,
     transform: [{ rotate: '6deg' }],
   },
+  nameBlock: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   appName: {
     fontFamily: fonts.plusJakartaSans.extraBold,
-    fontSize: 48,
-    letterSpacing: -2.4,
+    fontSize: 42,
+    letterSpacing: -2,
     color: colors.primary,
-    marginBottom: 12,
+    textAlign: 'center',
     textShadowColor: colors.shadowSubtle,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
+  appNameSecondary: {
+    fontFamily: fonts.plusJakartaSans.extraBold,
+    fontSize: 32,
+    letterSpacing: -1.2,
+    color: colors.secondaryBrand,
+    textAlign: 'center',
+    marginTop: 2,
+  },
   taglineBlock: {
     alignItems: 'center',
     gap: 10,
-  },
-  tagSub: {
-    fontFamily: fonts.inter.bold,
-    fontSize: 12,
-    letterSpacing: 3.6,
-    textTransform: 'uppercase',
-    color: colors.primaryBase,
-    opacity: 0.7,
   },
   tagline: {
     fontFamily: fonts.inter.italic,

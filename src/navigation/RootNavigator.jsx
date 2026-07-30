@@ -85,7 +85,7 @@ const AppStack = () => (
       <Stack.Screen
         name="TransporterApp"
         component={TransporterTabNavigator}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, title: 'Transporter App' }}
       />
       <Stack.Screen
         name="TransporterProfileDetails"
