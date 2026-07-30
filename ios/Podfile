@@ -35,9 +35,29 @@ target 'maulitransporter' do
     # to prevent "folly/coro/Coroutine.h file not found" errors on C++20 builds.
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        config.build_settings['OTHER_CPLUSPLUSFLAGS'] ||= ['$(inherited)']
-        config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-DFOLLY_CFG_NO_COROUTINES=1'
+        # CocoaPods may have already set this as a String (e.g. "$(inherited) -DNDEBUG");
+        # appending to a String concatenates without a separator and corrupts the last
+        # flag into -DNDEBUG-DFOLLY_CFG_NO_COROUTINES=1, which breaks Release builds
+        # with "'NDEBUG' macro redefined" + "ISO C99 requires whitespace after the
+        # macro name". Always normalise to an Array before adding ours.
+        flags = config.build_settings['OTHER_CPLUSPLUSFLAGS'] || ['$(inherited)']
+        flags = flags.split(' ') if flags.is_a?(String)
+        flags << '-DFOLLY_CFG_NO_COROUTINES=1' unless flags.include?('-DFOLLY_CFG_NO_COROUTINES=1')
+        config.build_settings['OTHER_CPLUSPLUSFLAGS'] = flags
       end
+    end
+
+    # MMKVCore 2.4.0's podspec nests a "RELEASE" => {...} hash inside
+    # pod_target_xcconfig, which CocoaPods does not support. It serialises the raw
+    # Ruby hash into the generated xcconfig as a setting literally named RELEASE, so
+    # clang receives -DRELEASE={"GCC_PREPROCESSOR_DEFINITIONS" and Release builds die
+    # with "'NDEBUG' macro redefined" + "ISO C99 requires whitespace after the macro
+    # name". Only bites on archive. Strip the line from the generated xcconfigs;
+    # NDEBUG=1 is already set by the Release configuration itself, so nothing is lost.
+    Dir.glob(File.join(installer.sandbox.target_support_files_root, '**', '*.xcconfig')).each do |path|
+      contents = File.read(path)
+      cleaned = contents.gsub(/^RELEASE = \{.*\}\n/, '')
+      File.write(path, cleaned) unless cleaned == contents
     end
   end
 end
