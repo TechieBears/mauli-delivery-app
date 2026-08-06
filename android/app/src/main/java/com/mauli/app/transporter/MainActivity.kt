@@ -1,4 +1,4 @@
-package com.maulitransporter
+package com.mauli.app.transporter
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

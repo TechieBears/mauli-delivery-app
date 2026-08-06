@@ -19,7 +19,6 @@
 
     <!-- Media — Android 13+ uses granular permissions -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
     <!-- Media — Android 12 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"

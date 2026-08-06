@@ -1,4 +1,4 @@
-package com.maulitransporter
+package com.mauli.app.transporter
 
 import android.app.Application
 import com.facebook.react.PackageList
