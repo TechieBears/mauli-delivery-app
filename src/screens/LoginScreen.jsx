@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
-import Svg, { Path } from 'react-native-svg';
 import useAppStore from '../store/useAppStore';
 import { useSendOtp } from '../hooks/useAuthQueries';
 import logger from '../utils/logger';
@@ -140,15 +139,6 @@ const LoginScreen = ({ navigation }) => {
             By continuing, you agree to our{' '}
             <Text style={styles.termsLink}>Terms & Privacy Policy</Text>
           </Text>
-
-          <View style={styles.registerRow}>
-            <Text style={styles.registerText}>New Transporter? </Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Onboarding')}
-              activeOpacity={0.7}>
-              <Text style={styles.registerLink}>Register here</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -228,18 +218,6 @@ const styles = StyleSheet.create({
 
   terms: { fontSize: 12, color: '#9ca3af', textAlign: 'center', lineHeight: 18 },
   termsLink: { color: '#2e7d32', fontWeight: '600' },
-
-  registerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 24,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  registerText: { fontSize: 14, color: '#374151' },
-  registerLink: { fontSize: 14, fontWeight: '700', color: '#2e7d32' },
 });
 
 export default LoginScreen;
