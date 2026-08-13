@@ -41,7 +41,6 @@ const TransporterVendorDetailScreen = ({ navigation, route }) => {
     setVehicleNo,
     locationRationaleVisible,
     onLocationRationaleResult,
-    closeLocationRationale,
   } = usePickupFlow({
     navigation,
     vendorName: vendor.vendorName,
@@ -131,7 +130,6 @@ const TransporterVendorDetailScreen = ({ navigation, route }) => {
       <LocationPermissionModal
         visible={locationRationaleVisible}
         onResult={onLocationRationaleResult}
-        onClose={closeLocationRationale}
       />
     </SafeAreaView>
   );

@@ -88,10 +88,6 @@ const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
     launchScanner();
   }, [launchScanner]);
 
-  const closeLocationRationale = useCallback(() => {
-    setLocationRationaleVisible(false);
-  }, []);
-
   const confirmPickup = useCallback(() => {
     confirm(
       { token: scan?.token, vehicleNo: effectiveVehicle },
@@ -131,9 +127,10 @@ const usePickupFlow = ({ navigation, vendorName, onConfirmed } = {}) => {
     effectiveVehicle,
     setVehicleNo,
     // Wire these into a <LocationPermissionModal> in the screen using this flow.
+    // The modal has no dismiss path by design (App Store 5.1.1(iv)) — it always
+    // resolves through onLocationRationaleResult.
     locationRationaleVisible,
     onLocationRationaleResult,
-    closeLocationRationale,
   };
 };
 

@@ -83,11 +83,11 @@ const requestAndroidLocation = async () => {
   const bgResult = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
     {
-      title: 'Allow location all the time',
+      title: 'Background location',
       message:
-        'To keep tracking the order when the app is in the background, choose "Allow all the time".',
-      buttonPositive: 'Allow',
-      buttonNegative: 'Not now',
+        'Tracking continues while the app is in the background so the order keeps updating during a delivery.',
+      buttonPositive: 'Continue',
+      buttonNegative: 'Cancel',
     },
   );
   if (bgResult === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {

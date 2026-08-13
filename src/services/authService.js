@@ -16,3 +16,9 @@ export const sendOtp = (phone, name, role, countryCode) =>
 // Step 2 — POST /api/auth/verify-otp
 export const verifyOtp = (phone, otp) =>
   api.post('/auth/verify-otp', { phone, otp });
+
+// DELETE /api/user/delete-account — permanently deletes the signed-in account.
+// Authenticated: the server deletes whoever holds the bearer token, so nothing
+// identifying the account is sent in the body. Required by App Store guideline
+// 5.1.1(v). Irreversible — the caller must confirm with the user first.
+export const deleteAccount = () => api.delete('/user/delete-account');

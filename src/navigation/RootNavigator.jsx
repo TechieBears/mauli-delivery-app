@@ -14,6 +14,7 @@ import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
 import TransporterKycScreen from '../screens/onboarding/TransporterKycScreen';
 import VerificationPendingScreen from '../screens/onboarding/VerificationPendingScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import TransporterTabNavigator from './TransporterTabNavigator';
 import {
   TransporterProfileDetailsScreen,
@@ -132,6 +133,11 @@ const AppStack = () => (
       <Stack.Screen
         name="HelpSupport"
         component={HelpSupportScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
         options={{ headerShown: false }}
       />
   </Stack.Navigator>

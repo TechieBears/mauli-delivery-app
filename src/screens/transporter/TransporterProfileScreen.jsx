@@ -18,6 +18,7 @@ import {
   ArrowRight2,
   LogoutCurve,
   TickCircle,
+  Setting2,
 } from 'iconsax-react-native';
 import useAppStore from '../../store/useAppStore';
 import {
@@ -121,6 +122,12 @@ const TransporterProfileScreen = ({ navigation }) => {
       desc: '24/7 Agent Access',
       Icon: MessageQuestion,
     },
+    {
+      id: 'settings',
+      label: 'Settings',
+      desc: 'Notifications and account',
+      Icon: Setting2,
+    },
   ];
 
   const handleLogout = () => {
@@ -138,7 +145,11 @@ const TransporterProfileScreen = ({ navigation }) => {
       navigation.navigate('TransporterMyOrders', { tab: STATUS_ACCEPTED });
       return;
     }
-    if (id === 'help') navigation.navigate('HelpSupport');
+    if (id === 'help') {
+      navigation.navigate('HelpSupport');
+      return;
+    }
+    if (id === 'settings') navigation.navigate('Settings');
   };
 
   return (

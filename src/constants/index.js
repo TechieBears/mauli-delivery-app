@@ -21,4 +21,5 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: 'refresh_token',
   USER: 'user',
   THEME: 'theme',
+  PUSH_ENABLED: 'push_enabled',
 };
