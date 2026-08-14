@@ -14,8 +14,15 @@ export const sendOtp = (phone, name, role, countryCode) =>
   });
 
 // Step 2 — POST /api/auth/verify-otp
-export const verifyOtp = (phone, otp) =>
-  api.post('/auth/verify-otp', { phone, otp });
+// fcmToken is optional and persisted by the backend in the same write that
+// creates the session, so a device is registered for push the moment it logs
+// in rather than depending on a follow-up PUT /user/fcm-token succeeding.
+export const verifyOtp = (phone, otp, fcmToken) =>
+  api.post('/auth/verify-otp', {
+    phone,
+    otp,
+    ...(fcmToken && { fcmToken }),
+  });
 
 // DELETE /api/user/delete-account — permanently deletes the signed-in account.
 // Authenticated: the server deletes whoever holds the bearer token, so nothing

@@ -16,6 +16,7 @@ import {
   useTransporterProfile,
 } from '../../hooks/useTransporterQueries';
 import { colors } from '../../theme/colors';
+import NotificationBell from '../../components/NotificationBell';
 import LocationTracking from '../../services/LocationTrackingService';
 import OrderRow from './OrderRow';
 import VendorCard from './VendorCard';
@@ -79,6 +80,7 @@ const TransporterHomeScreen = ({ navigation }) => {
           {greeting}
           {firstName ? `, ${firstName}` : ''}
         </Text>
+        <NotificationBell />
       </View>
 
       <FlatList
@@ -149,12 +151,21 @@ const TransporterHomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface },
   center: { alignItems: 'center', justifyContent: 'center' },
-  header: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12 },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   greeting: {
+    // flex so a long name truncates rather than pushing the bell off-screen.
+    flex: 1,
     fontSize: 24,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 4,
+    marginRight: 12,
   },
   sectionTitle: {
     fontSize: 14,

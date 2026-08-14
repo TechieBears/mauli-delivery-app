@@ -15,6 +15,7 @@ import TransporterKycScreen from '../screens/onboarding/TransporterKycScreen';
 import VerificationPendingScreen from '../screens/onboarding/VerificationPendingScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import TransporterTabNavigator from './TransporterTabNavigator';
 import {
   TransporterProfileDetailsScreen,
@@ -138,6 +139,12 @@ const AppStack = () => (
       <Stack.Screen
         name="Settings"
         component={SettingsScreen}
+        options={{ headerShown: false }}
+      />
+      {/* Renders its own AppHeader, like Settings and HelpSupport. */}
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
         options={{ headerShown: false }}
       />
   </Stack.Navigator>

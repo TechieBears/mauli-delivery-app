@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "235686263405",
+    "project_id": "mauli-mart-7258d",
+    "storage_bucket": "mauli-mart-7258d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235686263405:android:53160176a42f307390dd64",
+        "android_client_info": {
+          "package_name": "com.mauli.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT5u6A_6v9MpG2tcJpMirYYzfH7rMsVvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235686263405:android:33aa83de057c3ed290dd64",
+        "android_client_info": {
+          "package_name": "com.mauli.app.transporter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT5u6A_6v9MpG2tcJpMirYYzfH7rMsVvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

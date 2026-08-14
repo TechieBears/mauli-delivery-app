@@ -58,6 +58,10 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<!-- Lets iOS wake the app for a data push so the FCM background handler
+		     registered in index.js can run. Without it, pushes are only handled
+		     when the app is already in the foreground. -->
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

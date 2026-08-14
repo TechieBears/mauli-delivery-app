@@ -8,6 +8,14 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# react-native-firebase defaults to resolving Firebase through SPM, but
+# firebase-ios-sdk's SPM products are automatic libraries rather than dynamic
+# ones, so under `use_frameworks! :linkage => :static` each RNFB pod embeds its
+# own copy and they collide as duplicate symbols at link time. Falling back to
+# CocoaPods for Firebase keeps linkage a project-wide choice instead of one
+# Firebase forces on us. Must be set before any target block.
+$RNFirebaseDisableSPM = true
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -16,6 +24,14 @@ end
 
 target 'maulitransporter' do
   config = use_native_modules!
+
+  # Firebase's Swift pods import these two Objective-C pods, and importing an
+  # ObjC pod from Swift under static linkage requires a module map, which
+  # neither defines by default. Scoped to just these rather than a global
+  # `use_modular_headers!`, which would change how every pod in the project
+  # compiles — including the RCT-Folly workaround in post_install.
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
