@@ -10,6 +10,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft2, ArrowDown2, ArrowUp2, MessageQuestion, Call, Sms } from 'iconsax-react-native';
 import { colors } from '../theme/colors';
+import { useSupportContact } from '../hooks/useSettingsQueries';
+import { openDialer, openEmail } from '../utils/openLink';
+
+// Shown until GET /settings/support responds, and if the admin has left the
+// settings fields blank.
+const FALLBACK_SUPPORT = {
+  phone: '9833355302',
+  email: 'contact@mauligmart.com',
+};
 
 const FAQS = [
   { id: 'f1', q: 'How do I place a new order?', a: 'Go to Home tab and tap "Start New Order". Browse the catalog, select items and quantities, then proceed to checkout.' },
@@ -37,7 +46,12 @@ const FaqItem = ({ item }) => {
   );
 };
 
-const HelpSupportScreen = ({ navigation }) => (
+const HelpSupportScreen = ({ navigation }) => {
+  const { data: support } = useSupportContact();
+  const phone = support?.phone || FALLBACK_SUPPORT.phone;
+  const email = support?.email || FALLBACK_SUPPORT.email;
+
+  return (
   <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
     <StatusBar barStyle="dark-content" backgroundColor="#faf8f5" />
 
@@ -75,24 +89,31 @@ const HelpSupportScreen = ({ navigation }) => (
       {/* Contact */}
       <Text style={styles.sectionLabel}>CONTACT US</Text>
       <View style={styles.contactCard}>
-        <TouchableOpacity style={styles.contactRow} activeOpacity={0.75}>
+        <TouchableOpacity
+          style={styles.contactRow}
+          activeOpacity={0.75}
+          onPress={() => openDialer(phone)}>
           <View style={[styles.contactIcon, { backgroundColor: '#dcfce7' }]}>
             <Call size={20} color={colors.primary} variant="Bold" />
           </View>
           <View style={styles.contactMeta}>
             <Text style={styles.contactLabel}>Call Support</Text>
-            <Text style={styles.contactDesc}>Mon–Sat, 9 AM – 6 PM</Text>
+            <Text style={styles.contactDesc}>{phone}</Text>
+            <Text style={styles.contactHint}>Mon–Sat, 9 AM – 6 PM</Text>
           </View>
           <ArrowLeft2 size={16} color="#d1d5db" style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
         <View style={styles.faqSep} />
-        <TouchableOpacity style={styles.contactRow} activeOpacity={0.75}>
+        <TouchableOpacity
+          style={styles.contactRow}
+          activeOpacity={0.75}
+          onPress={() => openEmail(email, 'Mauli Gmart — Transporter support request')}>
           <View style={[styles.contactIcon, { backgroundColor: '#eff6ff' }]}>
             <Sms size={20} color="#1d4ed8" variant="Bold" />
           </View>
           <View style={styles.contactMeta}>
             <Text style={styles.contactLabel}>Email Support</Text>
-            <Text style={styles.contactDesc}>support@maulimart.in</Text>
+            <Text style={styles.contactDesc}>{email}</Text>
           </View>
           <ArrowLeft2 size={16} color="#d1d5db" style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
@@ -100,7 +121,8 @@ const HelpSupportScreen = ({ navigation }) => (
 
     </ScrollView>
   </SafeAreaView>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#faf8f5' },
@@ -152,7 +174,8 @@ const styles = StyleSheet.create({
   contactIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   contactMeta: { flex: 1 },
   contactLabel: { fontSize: 14, fontWeight: '700', color: colors.text },
-  contactDesc: { fontSize: 12, color: '#9ca3af', marginTop: 2 },
+  contactDesc: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  contactHint: { fontSize: 11, color: '#9ca3af', marginTop: 1 },
 });
 
 export default HelpSupportScreen;
