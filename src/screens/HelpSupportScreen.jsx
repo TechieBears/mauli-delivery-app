@@ -28,12 +28,11 @@ const FAQS = [
   { id: 'f5', q: 'How are prices determined?', a: 'Prices are set by vendors and reviewed daily based on market rates. Emergency catalog may have different pricing.' },
 ];
 
-const FaqItem = ({ item }) => {
-  const [open, setOpen] = useState(false);
+const FaqItem = ({ item, open, onToggle }) => {
   return (
     <TouchableOpacity
       style={styles.faqItem}
-      onPress={() => setOpen(v => !v)}
+      onPress={onToggle}
       activeOpacity={0.75}>
       <View style={styles.faqHeader}>
         <Text style={styles.faqQ}>{item.q}</Text>
@@ -48,6 +47,8 @@ const FaqItem = ({ item }) => {
 
 const HelpSupportScreen = ({ navigation }) => {
   const { data: support } = useSupportContact();
+  // Only one FAQ stays expanded at a time.
+  const [openFaqId, setOpenFaqId] = useState(null);
   const phone = support?.phone || FALLBACK_SUPPORT.phone;
   const email = support?.email || FALLBACK_SUPPORT.email;
 
@@ -80,7 +81,11 @@ const HelpSupportScreen = ({ navigation }) => {
       <View style={styles.faqCard}>
         {FAQS.map((item, idx) => (
           <View key={item.id}>
-            <FaqItem item={item} />
+            <FaqItem
+              item={item}
+              open={openFaqId === item.id}
+              onToggle={() => setOpenFaqId(id => (id === item.id ? null : item.id))}
+            />
             {idx < FAQS.length - 1 && <View style={styles.faqSep} />}
           </View>
         ))}
