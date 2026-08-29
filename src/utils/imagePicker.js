@@ -3,10 +3,7 @@ import {
   launchCamera,
   launchImageLibrary,
 } from 'react-native-image-picker';
-import {
-  ensureCameraPermission,
-  ensureMediaPermission,
-} from '../services/permissions';
+import { ensureCameraPermission } from '../services/permissions';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -42,10 +39,10 @@ const assetToFile = asset => {
 };
 
 const pickImage = async source => {
+  // Only the camera needs a permission. The gallery path opens the system photo
+  // picker, which hands back the single item the user chose without one.
   if (source === 'camera') {
     await ensureCameraPermission();
-  } else {
-    await ensureMediaPermission();
   }
 
   const launcher =
@@ -61,7 +58,7 @@ const pickImage = async source => {
     const message =
       result.errorMessage ??
       (result.errorCode === 'permission'
-        ? 'Camera or photo library permission was denied. Enable it in Settings.'
+        ? 'Camera permission was denied. Enable it in Settings.'
         : 'Could not pick image. Please try again.');
     throw new Error(message);
   }

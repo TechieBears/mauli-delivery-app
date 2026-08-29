@@ -10,16 +10,14 @@ const isAndroid13Plus = isAndroid && Number(Platform.Version) >= 33;
 
 const GRANTED = PermissionsAndroid.RESULTS.GRANTED;
 
+// Gallery access is deliberately absent: picking a document photo goes through the
+// Android Photo Picker, which grants access to just the chosen item and needs no
+// permission. Asking for READ_MEDIA_IMAGES would request the entire gallery.
 const getAndroidPermissions = () => {
   const list = [PermissionsAndroid.PERMISSIONS.CAMERA];
 
   if (isAndroid13Plus) {
-    list.push(
-      PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-    );
-  } else {
-    list.push(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+    list.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
   }
 
   return list;
@@ -66,8 +64,10 @@ const requestAndroidPermission = async (permission, featureLabel) => {
 };
 
 /**
- * Request camera, media, and notifications when the app starts (Android).
- * iOS shows system prompts when camera/gallery is first used.
+ * Request camera and notifications when the app starts (Android).
+ * iOS shows its system prompt when the camera is first used. Neither platform
+ * needs a prompt for the gallery — both use a system picker that grants access
+ * to only the item the user selects.
  */
 export const requestAppPermissionsOnLaunch = async () => {
   if (!isAndroid) {
@@ -86,16 +86,4 @@ export const ensureCameraPermission = async () => {
     PermissionsAndroid.PERMISSIONS.CAMERA,
     'Camera',
   );
-};
-
-export const ensureMediaPermission = async () => {
-  if (!isAndroid) {
-    return true;
-  }
-
-  const permission = isAndroid13Plus
-    ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-    : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
-
-  return requestAndroidPermission(permission, 'Photos');
 };

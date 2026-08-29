@@ -17,14 +17,22 @@
     <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Media — Android 13+ uses granular permissions -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- No media-read permission is declared on purpose.
+         Document uploads go through the Android Photo Picker
+         (ActivityResultContracts.PickVisualMedia, used by react-native-image-picker),
+         which returns a scoped URI grant for the single item the user picked and
+         needs no permission at all. Declaring READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE
+         here would ask for the whole gallery and trips Play Console's
+         "Use alternative system pickers for photos / videos" policy block.
 
-    <!-- Media — Android 12 and below -->
+         react-native-camera-kit's own manifest declares the legacy storage
+         permissions, and manifest merger would fold them into the merged
+         manifest that Play scans. We only use its barcode scanner, which needs
+         CAMERA alone, so strip them here. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+        tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+        tools:node="remove" />
 
     <!-- Push notifications — Android 13+ requires explicit permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
