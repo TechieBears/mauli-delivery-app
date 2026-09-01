@@ -10,7 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationArrow, Warning } from 'phosphor-react-native';
 import { colors } from '../../theme/colors';
-import { hasBackgroundLocationPermission } from '../../services/locationPermissions';
+import {
+  hasBackgroundLocationPermission,
+  ALWAYS_ALLOW_LABEL,
+} from '../../services/locationPermissions';
 import LocationPermissionModal from '../../components/LocationPermissionModal';
 
 /**
@@ -69,7 +72,10 @@ const LocationBlockScreen = ({ onResolved }) => {
           You have a delivery in progress. Your location is used as your
           vehicle's location to track this order, so this app needs location
           access set to{' '}
-          <Text style={styles.strong}>“Allow all the time.”</Text>
+          {/* Platform-specific: "Always" on iOS, "Allow all the time" on
+              Android — naming the wrong one sends riders hunting for a toggle
+              that doesn't exist on their phone. */}
+          <Text style={styles.strong}>“{ALWAYS_ALLOW_LABEL}.”</Text>
         </Text>
 
         <View style={styles.notice}>

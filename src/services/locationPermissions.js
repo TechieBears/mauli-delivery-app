@@ -29,10 +29,18 @@ const GRANTED = PermissionsAndroid.RESULTS.GRANTED;
 // ACCESS_BACKGROUND_LOCATION is a distinct runtime permission from API 29 (Android 10).
 const needsSeparateBackground = isAndroid && Number(Platform.Version) >= 29;
 
+/**
+ * What the OS actually calls the always-on location option, for use in copy that
+ * tells a rider which setting to pick. iOS labels it "Always"; Android labels it
+ * "Allow all the time". Showing the wrong platform's wording sends people looking
+ * for a toggle that isn't there, so never hardcode either one in a screen.
+ */
+export const ALWAYS_ALLOW_LABEL = isAndroid ? 'Allow all the time' : 'Always';
+
 const promptOpenSettings = () => {
   Alert.alert(
     'Location permission required',
-    'Allow location access — including "Allow all the time" — in Settings so we can track the order using your vehicle location.',
+    `Allow location access — including "${ALWAYS_ALLOW_LABEL}" — in Settings so we can track the order using your vehicle location.`,
     [
       { text: 'Not now', style: 'cancel' },
       { text: 'Open Settings', onPress: () => Linking.openSettings() },
