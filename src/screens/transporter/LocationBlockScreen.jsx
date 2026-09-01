@@ -10,37 +10,51 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationArrow, Warning } from 'phosphor-react-native';
 import { colors } from '../../theme/colors';
-import {
-  ensureLocationPermission,
-  hasBackgroundLocationPermission,
-} from '../../services/locationPermissions';
+import { hasBackgroundLocationPermission } from '../../services/locationPermissions';
+import LocationPermissionModal from '../../components/LocationPermissionModal';
 
 /**
  * Full-screen gate shown when the rider has a delivery in transit but "all the
  * time" location is off/revoked. Nothing else in the app is reachable until
  * background location is granted again.
  *
- * "Enable location" re-requests the permission (on Android 10+ this opens the
- * OS "Allow all the time" screen); if the request can't surface the toggle we
- * fall back to Open Settings. `onResolved` is called once the permission is
- * confirmed granted, so the parent can drop the gate.
+ * This screen is a GATE, not a disclosure — it explains that the app is locked,
+ * which is not the same as telling the rider what data is collected. Google Play
+ * rejected the 1 Sep 2026 build for exactly that: "Enable location" here used to
+ * call `ensureLocationPermission()` directly, so the runtime prompt was not
+ * immediately preceded by a disclosure (this screen is the one in the rejection
+ * screenshot). It now shows <LocationPermissionModal> first and lets that modal
+ * fire the OS prompt. Never call the permission API straight from this screen.
+ *
+ * `onResolved` is called once the permission is confirmed granted, so the parent
+ * can drop the gate; if the grant didn't stick we fall back to Open Settings.
  */
 const LocationBlockScreen = ({ onResolved }) => {
   const [busy, setBusy] = useState(false);
+  const [disclosureVisible, setDisclosureVisible] = useState(false);
 
-  const handleEnable = async () => {
+  // Step 1 — always show the disclosure. The rider reads why location is needed
+  // before anything else happens, on every platform and in every permission
+  // state. The modal itself decides what its button does: fire the OS prompt, or
+  // (iOS after a "Don't Allow", where no prompt can ever appear again) open
+  // Settings. Don't shortcut to Settings from here — that would skip the reason.
+  const handleEnable = () => setDisclosureVisible(true);
+
+  // Step 2 — the modal has fired the OS prompt and the rider has answered.
+  // Confirm silently and lift the gate if location actually stuck.
+  const handleDisclosureResult = async () => {
+    setDisclosureVisible(false);
     setBusy(true);
-    // Re-request; on Android 10+ background is a separate grant that routes to
-    // Settings. Afterwards, confirm silently and lift the gate if it stuck.
-    await ensureLocationPermission();
     const granted = await hasBackgroundLocationPermission();
     setBusy(false);
     if (granted) {
       onResolved?.();
-    } else {
-      // The system may require the user to flip it manually — send them there.
-      Linking.openSettings();
+      return;
     }
+    // Still denied. Don't call openSettings() here: after a hard denial the
+    // permission layer already surfaces its own "open Settings" alert, and
+    // jumping to Settings on top of it yanks the rider out of the app mid-alert.
+    // The screen's own "Open Settings" button remains the manual route.
   };
 
   return (
@@ -82,12 +96,21 @@ const LocationBlockScreen = ({ onResolved }) => {
 
         <TouchableOpacity
           style={styles.secondaryBtn}
-          onPress={() => Linking.openSettings()}
+          // Opens this app's own settings pane (iOS
+          // UIApplicationOpenSettingsURLString / Android app details). Rejects
+          // if it can't be opened, so don't leave that promise unhandled.
+          onPress={() => Linking.openSettings().catch(() => {})}
           disabled={busy}
           activeOpacity={0.7}>
           <Text style={styles.secondaryBtnText}>Open Settings</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Owns the runtime prompt — see the note at the top of this file. */}
+      <LocationPermissionModal
+        visible={disclosureVisible}
+        onResult={handleDisclosureResult}
+      />
     </SafeAreaView>
   );
 };

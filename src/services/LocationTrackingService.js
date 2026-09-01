@@ -1,5 +1,5 @@
 import { Platform, AppState } from 'react-native';
-import { ensureLocationPermission } from './locationPermissions';
+import { hasLocationPermission } from './locationPermissions';
 import { postVehicleLocation } from './transporterService';
 import logger from '../utils/logger';
 
@@ -191,18 +191,22 @@ const start = async vehicleNo => {
     await stop();
   }
 
-  const { granted, background } = await ensureLocationPermission();
+  // NEVER request the permission from here. start() is called from places with
+  // no disclosure on screen (Home mount / focus, straight after a pickup is
+  // confirmed), and Google Play requires every runtime prompt to be immediately
+  // preceded by the in-app disclosure — prompting from here is what got the
+  // 1 Sep 2026 build rejected. Asking is the job of <LocationPermissionModal>;
+  // this only checks silently and tracks if the grant is already held.
+  const granted = await hasLocationPermission();
   if (!granted) {
     logger.log(
-      `[LocationTracking] permission denied — not tracking ${vehicleNo}`,
+      `[LocationTracking] permission not granted — not tracking ${vehicleNo}`,
     );
-    // The caller shows the rationale/OS prompt; a denied grant shouldn't block
-    // the pickup itself, so just bail quietly.
+    // Not fatal: useBackgroundLocationGate surfaces LocationBlockScreen when an
+    // in-transit delivery needs the grant, and that routes through the modal.
     return;
   }
-  logger.log(
-    `[LocationTracking] starting for ${vehicleNo} (background=${background})`,
-  );
+  logger.log(`[LocationTracking] starting for ${vehicleNo}`);
 
   currentVehicleNo = vehicleNo;
   running = true;
