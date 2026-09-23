@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { CheckSquare, Square, X, Warning } from 'phosphor-react-native';
+import { CheckSquare, Square, X, Warning, Info } from 'phosphor-react-native';
 import SwipeToConfirm from '../../components/SwipeToConfirm';
 import { orderLabel, customerName } from './orderStatus';
 import { colors } from '../../theme/colors';
@@ -27,12 +27,21 @@ const itemUnit = item => item?.productVariantId?.productId?.unit ?? '';
  * items, and gives the transporter a checkbox per item so they can tick off
  * what they've physically loaded.
  *
- * The checklist is a loading aid only — it is NOT sent to the backend.
- * POST /transporter/orders/confirm-pickup takes just { token, vehicleNo } and
- * moves the ENTIRE batch to intransit; there is no partial-pickup support. The
- * swipe stays disabled until everything is ticked so the transporter can't
- * confirm a batch they haven't fully checked, but once they swipe, all orders
- * in the QR are picked up regardless.
+ * The items listed are the VENDOR'S UPDATED MANIFEST, not the order as the
+ * customer placed it: anything the vendor reported as unavailable on their own
+ * packing checklist has already been refunded to the customer and is filtered
+ * out server-side (see order.transporter.controller AVAILABLE_ONLY). So this
+ * list is exactly what should be in the crates — a row that isn't here is not
+ * something to go looking for. `order.availabilityAdjustment` says whether
+ * anything was dropped, which the banner below surfaces so a short-looking
+ * order doesn't read as a mistake.
+ *
+ * The transporter's own ticking is a loading aid only — it is NOT sent to the
+ * backend. POST /transporter/orders/confirm-pickup takes just { token,
+ * vehicleNo } and moves the ENTIRE batch to intransit; there is no
+ * partial-pickup support. The swipe stays disabled until everything is ticked
+ * so the transporter can't confirm a batch they haven't fully checked, but once
+ * they swipe, all orders in the QR are picked up regardless.
  *
  * Props:
  *  visible    bool
@@ -128,6 +137,11 @@ const PickupConfirmModal = ({ visible, scan, submitting, onClose, onConfirm }) =
 
           {orders.map(entry => {
             const { order, items = [] } = entry;
+            // Lines the vendor could not supply. They are already absent from
+            // `items`; this is only so the card can say why it is shorter than
+            // the order the customer placed.
+            const dropped =
+              order?.availabilityAdjustment?.unavailableItemIds?.length ?? 0;
             const ids = items.map(i => String(i._id));
             const orderAllOn = ids.length > 0 && ids.every(id => checked.has(id));
             const customer = order?.customerId;
@@ -181,6 +195,17 @@ const PickupConfirmModal = ({ visible, scan, submitting, onClose, onConfirm }) =
                     </TouchableOpacity>
                   );
                 })}
+
+                {dropped > 0 ? (
+                  <View style={styles.droppedRow}>
+                    <Info size={16} color={colors.textSecondary} weight="fill" />
+                    <Text style={styles.droppedText}>
+                      {dropped} {dropped === 1 ? 'item was' : 'items were'} removed by
+                      the vendor and refunded to the customer — not part of this
+                      pickup.
+                    </Text>
+                  </View>
+                ) : null}
 
                 {items.length === 0 ? (
                   <Text style={styles.noItems}>No items on this order.</Text>
@@ -267,6 +292,17 @@ const styles = StyleSheet.create({
   itemName: { flex: 1, fontSize: 14, color: colors.text },
   itemNameOn: { color: colors.textSecondary },
   itemQty: { fontSize: 13, fontWeight: '700', color: colors.textSecondary },
+  droppedRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.inputBg,
+  },
+  droppedText: { flex: 1, fontSize: 12, lineHeight: 18, color: colors.textSecondary },
   noItems: {
     padding: 14,
     fontSize: 13,

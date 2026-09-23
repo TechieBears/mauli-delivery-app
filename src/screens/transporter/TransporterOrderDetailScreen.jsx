@@ -53,9 +53,14 @@ const TransporterOrderDetailScreen = ({ navigation, route }) => {
   const { data, isLoading, error } = useTransporterOrder(id);
   const [validating, setValidating] = useState(false);
 
-  // GET /transporter/orders/:id resolves to { order, items }.
+  // GET /transporter/orders/:id resolves to { order, items }. `items` is the
+  // vendor's UPDATED manifest — lines they reported as unavailable while packing
+  // are refunded to the customer and filtered out server-side, so this is what
+  // should physically be in the crates, not what the customer originally ordered.
   const order = data?.data?.order;
   const items = Array.isArray(data?.data?.items) ? data.data.items : [];
+  // Only to explain a short manifest; the dropped rows are not in `items`.
+  const droppedCount = order?.availabilityAdjustment?.unavailableItemIds?.length ?? 0;
 
   if (isLoading) {
     return (
@@ -125,6 +130,14 @@ const TransporterOrderDetailScreen = ({ navigation, route }) => {
               <Text style={styles.itemsBadgeText}>{items.length} Items</Text>
             </View>
           </View>
+
+          {droppedCount > 0 ? (
+            <Text style={styles.droppedNote}>
+              {droppedCount} {droppedCount === 1 ? 'item was' : 'items were'} removed
+              by the vendor and refunded to the customer. Collect only what is listed
+              below.
+            </Text>
+          ) : null}
 
           {items.length === 0 ? (
             <Text style={styles.infoText}>No items listed for this order.</Text>
@@ -275,6 +288,16 @@ const styles = StyleSheet.create({
   customerName: { fontSize: 15, fontWeight: '700', color: colors.text, marginBottom: 8 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
   infoText: { flex: 1, fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
+  droppedNote: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.textSecondary,
+    backgroundColor: colors.inputBg,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
   phoneText: { color: colors.primary, fontWeight: '700' },
 
   itemsBadge: {
