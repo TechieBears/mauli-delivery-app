@@ -3,6 +3,7 @@ import {
   View,
   Text,
   ScrollView,
+  RefreshControl,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
@@ -50,7 +51,7 @@ const InfoRow = ({ Icon, text }) =>
 
 const TransporterOrderDetailScreen = ({ navigation, route }) => {
   const id = route?.params?.id;
-  const { data, isLoading, error } = useTransporterOrder(id);
+  const { data, isLoading, error, refetch, isRefetching } = useTransporterOrder(id);
   const [validating, setValidating] = useState(false);
 
   // GET /transporter/orders/:id resolves to { order, items }. `items` is the
@@ -88,7 +89,22 @@ const TransporterOrderDetailScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.screen} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      {/* Pull to refresh. The manifest changes underneath the driver when the
+          vendor finishes packing and reports items they could not supply, and
+          this screen would otherwise hold whatever it fetched on mount: the
+          query refetches on mount and on app foreground, but not while it sits
+          open in the foreground, which is exactly when a vendor is packing. */}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }>
 
         {/* Summary */}
         <View style={styles.headerCard}>
