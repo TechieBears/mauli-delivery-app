@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -28,9 +27,8 @@ import {
 import { STATUS_ASSIGNED, STATUS_ACCEPTED } from './orderStatus';
 import { resetToLogin } from '../../navigation/navigationRef';
 import { colors } from '../../theme/colors';
+import InitialsAvatar from '../../components/InitialsAvatar';
 
-const AVATAR_URI =
-  'https://api.dicebear.com/9.x/avataaars/png?seed=Transporter&backgroundColor=c0aede';
 
 // ─── Logout Modal ─────────────────────────────────────────────────────────────
 
@@ -161,7 +159,7 @@ const TransporterProfileScreen = ({ navigation }) => {
         {/* Profile header */}
         <View style={styles.profileHead}>
           <View style={styles.avatarWrap}>
-            <Image source={{ uri: AVATAR_URI }} style={styles.avatar} />
+            <InitialsAvatar name={fullName} size={96} style={styles.avatar} />
             {isVerified ? (
               <View style={styles.tierBadge}>
                 <TickCircle size={16} color="#fff" variant="Bold" />
@@ -249,7 +247,6 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     borderWidth: 3,
     borderColor: '#dcfce7',
-    backgroundColor: '#c0aede',
   },
   tierBadge: {
     position: 'absolute',
