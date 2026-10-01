@@ -47,6 +47,23 @@ target 'maulitransporter' do
       # :ccache_enabled => true
     )
 
+    # fmt 11.0.2 (pinned by React Native) fails to compile its own src/format.cc
+    # under Apple clang 21 / Xcode 26: the FMT_STRING(...) calls in format-inl.h
+    # report "call to consteval function ... is not a constant expression".
+    # fmt only enables consteval at C++20 (FMT_USE_CONSTEVAL in base.h), and
+    # react_native_post_install sets C++20 across the whole project — fmt itself
+    # does not need it. Building just this one pod at C++17 turns the consteval
+    # path off and the file compiles.
+    #
+    # Note: -DFMT_USE_CONSTEVAL=0 does NOT work here — base.h redefines the macro
+    # unconditionally (no #ifndef guard), so the command-line value is discarded.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      end
+    end
+
     # RCT-Folly ships without folly/coro/ headers, so disable coroutine support
     # to prevent "folly/coro/Coroutine.h file not found" errors on C++20 builds.
     installer.pods_project.targets.each do |target|
