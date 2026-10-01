@@ -73,19 +73,24 @@ const TransporterProfileDetailsScreen = ({ navigation }) => {
 
   const handleSave = async () => {
     const next = {};
+    // Only the name is required — email, licence and vehicle are optional and
+    // can be filled in whenever the transporter has them.
+    const email = form.email.trim();
+    const licenseNo = form.licenseNo.trim();
+    const vehicleNo = form.vehicleNo.trim();
     if (!form.name.trim()) next.name = 'Name is required';
-    if (!form.email.trim()) next.email = 'Email is required';
-    else if (!EMAIL_RE.test(form.email.trim())) next.email = 'Enter a valid email';
-    if (!form.licenseNo.trim()) next.licenseNo = 'Licence number is required';
-    if (!form.vehicleNo.trim()) next.vehicleNo = 'Vehicle number is required';
+    if (email && !EMAIL_RE.test(email)) next.email = 'Enter a valid email';
     setErrors(next);
     if (Object.keys(next).length) return;
 
     try {
-      await saveIdentity({ name: form.name.trim(), email: form.email.trim() });
+      // A blank email is left out rather than saved as '' — email has a
+      // unique index, so two transporters with '' would collide.
+      await saveIdentity({ name: form.name.trim(), ...(email && { email }) });
+      // Blank vehicle is left out too: an empty vehicleNo fails the schema.
       await saveKyc({
-        drivingLicenseNo: form.licenseNo.trim(),
-        vehicles: [form.vehicleNo.trim()],
+        drivingLicenseNo: licenseNo,
+        ...(vehicleNo && { vehicles: [vehicleNo] }),
         ...(licenseFile && { drivingLicenseFile: licenseFile }),
       });
       toast.success('Profile updated');
@@ -139,7 +144,7 @@ const TransporterProfileDetailsScreen = ({ navigation }) => {
             />
           </Field>
 
-          <Field label="Email address" error={errors.email}>
+          <Field label="Email address (optional)" error={errors.email}>
             <TextInput
               style={[styles.input, errors.email && styles.inputError]}
               value={form.email}
@@ -152,7 +157,7 @@ const TransporterProfileDetailsScreen = ({ navigation }) => {
             />
           </Field>
 
-          <Field label="Vehicle number" error={errors.vehicleNo}>
+          <Field label="Vehicle number (optional)" error={errors.vehicleNo}>
             <TextInput
               style={[styles.input, errors.vehicleNo && styles.inputError]}
               value={form.vehicleNo}
@@ -164,7 +169,7 @@ const TransporterProfileDetailsScreen = ({ navigation }) => {
             />
           </Field>
 
-          <Field label="Driving licence number" error={errors.licenseNo}>
+          <Field label="Driving licence number (optional)" error={errors.licenseNo}>
             <TextInput
               style={[styles.input, errors.licenseNo && styles.inputError]}
               value={form.licenseNo}
@@ -176,7 +181,7 @@ const TransporterProfileDetailsScreen = ({ navigation }) => {
             />
           </Field>
 
-          <Field label="Driving licence document">
+          <Field label="Driving licence document (optional)">
             {licensePreviewUri ? (
               <View style={styles.previewCard}>
                 <Image

@@ -22,7 +22,6 @@ import { colors } from '../theme/colors';
 import { fonts } from '../theme/fonts';
 import useAppStore from '../store/useAppStore';
 import { fetchTransporterProfile } from '../services/transporterService';
-import { isOnboardingIncomplete } from '../utils/onboardingProgress';
 
 const BAR_WIDTH = 80;
 const BAR_FILL_WIDTH = Math.round(BAR_WIDTH / 3);
@@ -122,16 +121,12 @@ const SplashScreen = ({ navigation }) => {
       const kycStatus = transporter?.kycStatus ?? storedKycStatus;
       if (kycStatus) setKycStatus(kycStatus);
 
-      if (kycStatus === 'approved') {
-        navigation.replace('TransporterApp');
-      } else if (isOnboardingIncomplete(kycStatus)) {
-        // drafted / pending → the transporter's own KYC form. Never the shared
-        // Onboarding screen: that one defaults to the customer role and would
-        // fetch GET /customer/profile (403 for a transporter token).
-        navigation.replace('TransporterKyc');
-      } else {
-        // onReview → under review; rejected → rejected message.
+      // No registration form: transporters land in the app and complete their
+      // details from Profile. Only an admin rejection keeps them out.
+      if (kycStatus === 'rejected') {
         navigation.replace('VerificationPending', { kycStatus });
+      } else {
+        navigation.replace('TransporterApp');
       }
     }, 2500);
     return () => clearTimeout(timer);

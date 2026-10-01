@@ -11,7 +11,6 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import OtpScreen from '../screens/OtpScreen';
 import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
-import TransporterKycScreen from '../screens/onboarding/TransporterKycScreen';
 import VerificationPendingScreen from '../screens/onboarding/VerificationPendingScreen';
 import HelpSupportScreen from '../screens/HelpSupportScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -66,16 +65,6 @@ const AppStack = () => (
           title: 'Transporter Registration',
           headerBackTitle: '',
           gestureEnabled: false,
-        }}
-      />
-      <Stack.Screen
-        name="TransporterKyc"
-        component={TransporterKycScreen}
-        options={{
-          title: 'Transporter Registration',
-          headerBackTitle: '',
-          gestureEnabled: false,
-          headerBackVisible: false,
         }}
       />
       <Stack.Screen

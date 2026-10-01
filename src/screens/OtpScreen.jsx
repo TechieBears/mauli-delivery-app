@@ -121,15 +121,10 @@ const OtpScreen = ({ navigation, route }) => {
 
         logger.log('[Otp] transporter profile:', JSON.stringify(transporterProfile, null, 2));
 
-        // verify-otp returns kycStatus but not email, so the KYC form is gated
-        // on status, not on a missing email:
-        //   drafted / pending → registration form (name/email/licence/vehicle)
-        //   onReview          → under review
-        //   rejected          → rejected message
-        //   approved          → home
-        // Submitting the form leaves kycStatus at 'pending' — only an admin
-        // moves it to 'approved', which is what actually opens the app.
-        // Prefer the profile's status: it's read fresh, so an approval granted
+        // Transporters go straight into the app — there is no registration
+        // form; name/email/licence/vehicle are optional and edited from
+        // Profile. Only an admin rejection keeps them out (rejected message).
+        // Prefer the profile's status: it's read fresh, so a decision made
         // since the token was issued is picked up here.
         const transporterKyc = transporterProfile?.kycStatus ?? kycStatus;
 
@@ -140,15 +135,12 @@ const OtpScreen = ({ navigation, route }) => {
           isActive: transporterProfile?.isActive,
           hasLicense: !!transporterProfile?.drivingLicenseNo,
           vehicleCount: transporterProfile?.vehicles?.length ?? 0,
-          incomplete: isOnboardingIncomplete(transporterKyc),
         });
 
-        if (transporterKyc === 'approved') {
-          navigation.reset({ index: 0, routes: [{ name: 'TransporterApp' }] });
-        } else if (isOnboardingIncomplete(transporterKyc)) {
-          navigation.reset({ index: 0, routes: [{ name: 'TransporterKyc' }] });
-        } else {
+        if (transporterKyc === 'rejected') {
           navigation.reset({ index: 0, routes: [{ name: 'VerificationPending', params: { kycStatus: transporterKyc } }] });
+        } else {
+          navigation.reset({ index: 0, routes: [{ name: 'TransporterApp' }] });
         }
       } else if (userRole === 'vendor') {
         // Fetch + log the full vendor profile so we can inspect what the
