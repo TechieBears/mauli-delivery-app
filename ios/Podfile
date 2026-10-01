@@ -64,6 +64,19 @@ target 'maulitransporter' do
       end
     end
 
+    # This app's Metro runs on 8082 (mauliapp owns 8081 — see scripts/android.sh).
+    # React-Core bakes the port in via GCC_PREPROCESSOR_DEFINITIONS
+    # "RCT_METRO_PORT=${RCT_METRO_PORT}", which `react-native run-ios --port 8082`
+    # fills from the environment — but a build started from Xcode leaves it empty,
+    # so RCTDefines.h falls back to 8081 and the app shows "No script URL provided".
+    # Pinning the build setting makes Xcode builds ask 8082 too.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'React-Core'
+      target.build_configurations.each do |config|
+        config.build_settings['RCT_METRO_PORT'] = '8082'
+      end
+    end
+
     # RCT-Folly ships without folly/coro/ headers, so disable coroutine support
     # to prevent "folly/coro/Coroutine.h file not found" errors on C++20 builds.
     installer.pods_project.targets.each do |target|
