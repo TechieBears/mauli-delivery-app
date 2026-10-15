@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -60,7 +61,7 @@ const toCardOrder = raw => ({
   orderType: raw.orderType,
 });
 
-const OrderCard = ({ order, onPress, onAccept, accepting }) => {
+const OrderCard = ({ order, onPress, onAccept, accepting, onReject, rejecting }) => {
   const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending;
   const isPending = order.status === 'pending';
 
@@ -92,7 +93,7 @@ const OrderCard = ({ order, onPress, onAccept, accepting }) => {
         <TouchableOpacity
           style={[styles.actionBtn]}
           onPress={isPending ? onAccept : onPress}
-          disabled={accepting}
+          disabled={accepting || rejecting}
           activeOpacity={0.85}>
           {accepting ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -102,6 +103,19 @@ const OrderCard = ({ order, onPress, onAccept, accepting }) => {
             </Text>
           )}
         </TouchableOpacity>
+        {isPending && (
+          <TouchableOpacity
+            style={styles.rejectBtn}
+            onPress={onReject}
+            disabled={accepting || rejecting}
+            activeOpacity={0.85}>
+            {rejecting ? (
+              <ActivityIndicator size="small" color={colors.error} />
+            ) : (
+              <Text style={styles.rejectBtnText}>Reject</Text>
+            )}
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.moreBtn}
           onPress={onPress}
@@ -142,6 +156,28 @@ const VendorOrdersScreen = ({ navigation }) => {
         onSuccess: () => toast.success('Order accepted'),
         onError: e => toast.error('Could not accept order', e?.message),
       },
+    );
+
+  // Same confirmation as the Reject button on the order detail screen.
+  const handleReject = id =>
+    Alert.alert(
+      'Reject Order',
+      `Are you sure you want to reject order #${String(id).slice(-6).toUpperCase()}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: () =>
+            updateStatus(
+              { id, status: 'rejected' },
+              {
+                onSuccess: () => toast.success('Order rejected'),
+                onError: e => toast.error('Could not reject order', e?.message),
+              },
+            ),
+        },
+      ],
     );
 
   // Filter capsules come from the API's `statuses`; fall back until it loads.
@@ -201,7 +237,9 @@ const VendorOrdersScreen = ({ navigation }) => {
               order={item}
               onPress={() => navigation.navigate('OrderDetail', { orderId: item.id })}
               onAccept={() => handleAccept(item.id)}
-              accepting={isUpdating && updatingVars?.id === item.id}
+              accepting={isUpdating && updatingVars?.id === item.id && updatingVars?.status === 'confirmed'}
+              onReject={() => handleReject(item.id)}
+              rejecting={isUpdating && updatingVars?.id === item.id && updatingVars?.status === 'rejected'}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -368,6 +406,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#fff',
+  },
+  rejectBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: colors.error,
+    borderRadius: 12,
+    paddingVertical: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rejectBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.error,
   },
   moreBtn: {
     width: 46,

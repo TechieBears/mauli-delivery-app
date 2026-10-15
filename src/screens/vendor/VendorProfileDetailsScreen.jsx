@@ -157,7 +157,7 @@ const VendorProfileDetailsScreen = ({ navigation }) => {
           <View style={styles.rowDivider} />
           <InfoRow
             icon={<Location size={17} color={colors.textSecondary} variant="Linear" />}
-            label="Primary Farm Address"
+            label="Primary Address"
             value={address}
           />
         </View>
