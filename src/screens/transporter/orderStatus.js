@@ -31,6 +31,19 @@ export const formatAddress = address => {
     .join(', ');
 };
 
+// A Google Maps link to the customer's delivery point, which opens the Maps app
+// when it's installed and the browser otherwise. Uses the pin from onboarding;
+// 0 is the backend's default for "no pin", so a record without one searches by
+// its address instead. Returns '' when there is neither.
+export const customerMapsHref = customer => {
+  const lat = customer?.address?.lat || customer?.lat;
+  const lng = customer?.address?.lng || customer?.long;
+  const query = lat && lng ? `${lat},${lng}` : formatAddress(customer?.address);
+  return query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+    : '';
+};
+
 // `orderNumber` is not set on these orders today, so the label falls back to the
 // tail of the Mongo _id — uppercased, since hex ids read better in caps.
 export const orderLabel = order =>
