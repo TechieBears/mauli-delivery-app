@@ -10,7 +10,7 @@ import {
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Location, Call, Truck, TickCircle, Box, Clock } from 'iconsax-react-native';
+import { Location, Call, Truck, TickCircle, Box, Clock, Map1 } from 'iconsax-react-native';
 import { useTransporterOrder } from '../../hooks/useTransporterQueries';
 import DeliveryValidationModal from './DeliveryValidationModal';
 import { STATUS_ACCEPTED } from './orderStatus';
@@ -19,9 +19,11 @@ import {
   orderLabel,
   customerName,
   customerPhone,
+  customerMapsHref,
   telHref,
   slotLabel,
 } from './orderStatus';
+import { openExternalLink } from '../../utils/openLink';
 import { colors } from '../../theme/colors';
 
 const formatDateTime = iso => {
@@ -123,6 +125,15 @@ const TransporterOrderDetailScreen = ({ navigation, route }) => {
               <Text style={styles.customerName}>{customerName(customer)}</Text>
             ) : null}
             <InfoRow Icon={Location} text={formatAddress(customer.address)} />
+            {customerMapsHref(customer) ? (
+              <TouchableOpacity
+                style={styles.mapsBtn}
+                onPress={() => openExternalLink(customerMapsHref(customer))}
+                activeOpacity={0.7}>
+                <Map1 size={16} color={colors.primary} variant="Bold" />
+                <Text style={styles.mapsBtnText}>Open in Google Maps</Text>
+              </TouchableOpacity>
+            ) : null}
             {customerPhone(customer) ? (
               <TouchableOpacity
                 style={styles.infoRow}
@@ -315,6 +326,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   phoneText: { color: colors.primary, fontWeight: '700' },
+  mapsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 10,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 10,
+  },
+  mapsBtnText: { fontSize: 13, fontWeight: '700', color: colors.primary },
 
   itemsBadge: {
     backgroundColor: colors.primaryLight,

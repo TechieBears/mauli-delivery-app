@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
-import { Phone, MapPin, Clock } from 'phosphor-react-native';
+import { Phone, MapPin, MapTrifold, Clock } from 'phosphor-react-native';
 import { colors } from '../../theme/colors';
 import {
   statusConfig,
@@ -8,9 +8,11 @@ import {
   orderLabel,
   customerName,
   customerPhone,
+  customerMapsHref,
   telHref,
   slotLabel,
 } from './orderStatus';
+import { openExternalLink } from '../../utils/openLink';
 
 /**
  * One order in a transporter-facing list. Shared by the home screen's accepted
@@ -23,6 +25,7 @@ const OrderRow = ({ order, onPress, compact }) => {
   const address = formatAddress(customer?.address);
   const name = customerName(customer);
   const phone = customerPhone(customer);
+  const mapsHref = customerMapsHref(customer);
   const slot = slotLabel(order);
 
   return (
@@ -50,6 +53,21 @@ const OrderRow = ({ order, onPress, compact }) => {
             {address}
           </Text>
         </View>
+      ) : null}
+
+      {mapsHref ? (
+        // Nested in the card's touchable, like the phone number below.
+        <TouchableOpacity
+          style={styles.infoRow}
+          onPress={e => {
+            e.stopPropagation();
+            openExternalLink(mapsHref);
+          }}
+          activeOpacity={0.7}
+          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+          <MapTrifold size={14} color={colors.primary} weight="fill" />
+          <Text style={styles.phone}>Open in Google Maps</Text>
+        </TouchableOpacity>
       ) : null}
 
       {phone ? (
